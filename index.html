@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RM Informática</title>
-<link rel="icon" href="assets/icone.svg" type="image/svg+xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231e3a8a'/%3E%3Ctext x='32' y='42' font-family='Arial' font-size='28' font-weight='700' fill='%23fff' text-anchor='middle'%3ERM%3C/text%3E%3C/svg%3E">
 <style>
 :root{
   --azul:#1d4ed8;--azul-esc:#1e3a8a;--azul-claro:#e8efff;--fundo:#f3f5f9;--card:#fff;--borda:#dfe3ea;--texto:#1b2230;--suave:#667085;
@@ -45,6 +45,7 @@ h3{font-size:13px;margin:0 0 8px;color:var(--suave);text-transform:uppercase;let
 .card{background:var(--card);border:1px solid var(--borda);border-radius:var(--raio);box-shadow:var(--sombra);padding:16px;margin-bottom:16px}
 .grade{display:grid;gap:16px;margin-bottom:16px}
 .grade>.card{margin-bottom:0}
+.grade>*{min-width:0}
 .g4{grid-template-columns:repeat(4,1fr)}
 .g2{grid-template-columns:repeat(2,1fr)}
 .num{font-size:28px;font-weight:700}
@@ -118,6 +119,12 @@ tbody tr.clicavel:hover{background:#f7f9ff}
 .abas button.ativo{border-color:var(--azul);color:var(--azul)}
 .senha-val{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--cinza-cl);padding:1px 6px;border-radius:5px}
 .menu-btn{display:none}
+.demo-cred{margin-top:18px;padding-top:14px;border-top:1px solid var(--borda);display:grid;gap:8px}
+.demo-cred button{text-align:left;border:1px solid var(--borda);background:var(--fundo);border-radius:8px;padding:9px 11px;cursor:pointer;line-height:1.35}
+.demo-cred button:hover{border-color:var(--azul)}
+.demo-cred small{display:block;color:var(--suave);font-size:12px}
+.demo-cred code{background:#fff;border:1px solid var(--borda);border-radius:4px;padding:0 4px}
+.demo-tag{margin-top:10px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.1);font-size:11px;line-height:1.5}
 .so-impressao{display:none}
 @media (max-width:1000px){.g4{grid-template-columns:repeat(2,1fr)}.campos,.dl{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:760px){
@@ -131,6 +138,8 @@ tbody tr.clicavel:hover{background:#f7f9ff}
   .campo.l2{grid-column:1/-1}
   .filtros input[type=search]{min-width:0;width:100%}
   .esconde-cel{display:none}
+  .tag{white-space:normal}
+  .dl dd{overflow-wrap:anywhere}
   .fundo-modal{padding:0}
   .modal{border-radius:0;min-height:100vh}
 }
@@ -170,8 +179,276 @@ function toast(msg, erro) {
   clearTimeout(toast.t); toast.t = setTimeout(() => (t.className = ''), erro ? 5000 : 2500);
 }
 
+// Servido pelo servidor/ → sistema de verdade. Aberto direto → demonstração com dados de exemplo.
+const ONLINE = !!window.RM_ONLINE;
+function rotaAtual() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  const i = h.indexOf('-');
+  return i < 0 ? [h || 'painel', ''] : [h.slice(0, i), h.slice(i + 1)];
+}
+function imprimir() {
+  if (ONLINE) return window.print();
+  toast('Na demonstração a impressão fica desligada. No sistema instalado, abre a ficha pronta para imprimir.');
+}
+function baixar() {
+  if (ONLINE) return true;
+  toast('Na demonstração o download fica desligado. No sistema instalado, baixa a planilha para abrir no Excel.');
+  return false;
+}
+
+// ---------------- demonstração (sem servidor) ----------------
+// Imita o servidor dentro do navegador. Os dados de exemplo ficam salvos só neste navegador.
+const DEMO = (() => {
+  const CHAVE = 'rminfo-demo-v1';
+  const d = (n) => { const x = new Date(); x.setDate(x.getDate() + n); return isoData(x); };
+  const quando = (n, h = '10:00') => d(n) + ' ' + h + ':00';
+  let sessao = null;
+  try { sessao = sessionStorage.getItem('rminfo-demo-user'); } catch {}
+
+  function exemplo() {
+    const R = { clientes: {}, equipamentos: {}, manutencoes: {}, config: {} };
+    const criado = new Date(Date.now() - 400 * 864e5).toISOString();
+    const add = (c, o) => { R[c][o.id] = { criadoEm: criado, criadoPor: 'Administrador', atualizadoEm: criado, atualizadoPor: 'Administrador', ...o }; };
+    // clientes
+    add('clientes', { id: 'c1', nome: 'Clínica Odontológica Sorriso Pleno', fantasia: 'Sorriso Pleno', pessoa: 'Empresa (CNPJ)', documento: '12.345.678/0001-90', segmento: 'Saúde', situacao: 'Ativo',
+      responsavel: 'Dra. Paula Menezes', telefone: '(92) 3233-1020', whatsapp: '(92) 99112-3344', email: 'contato@sorrisopleno.com.br', contatoTi: 'Juliana (recepção) — (92) 99200-1122', horario: 'Seg a sex, 8h às 18h',
+      cep: '69057-000', endereco: 'Av. Djalma Batista', numero: '1200', complemento: 'Sala 305', bairro: 'Chapada', cidade: 'Manaus', uf: 'AM',
+      contrato: 'Contrato mensal', valorMensal: 650, inicioContrato: d(-400), periodicidadeVisita: 30, diaPreferido: 'Sábado de manhã', obs: 'Não mexer nos computadores dos consultórios em horário de atendimento.' });
+    add('clientes', { id: 'c2', nome: 'Andrade & Lima Contabilidade', fantasia: 'Andrade & Lima', pessoa: 'Empresa (CNPJ)', documento: '23.456.789/0001-01', segmento: 'Contabilidade', situacao: 'Ativo',
+      responsavel: 'Carlos Andrade', telefone: '(92) 3622-4455', whatsapp: '(92) 98123-4567', email: 'carlos@andradelima.com.br', horario: 'Seg a sex, 8h às 17h30',
+      endereco: 'Rua Ramos Ferreira', numero: '850', bairro: 'Centro', cidade: 'Manaus', uf: 'AM',
+      contrato: 'Contrato com visitas periódicas', valorMensal: 980, inicioContrato: d(-300), periodicidadeVisita: 15, preventivaPadrao: 120, obs: 'Backup do servidor conferido em toda visita.' });
+    add('clientes', { id: 'c3', nome: 'Supermercado Bom Preço Ltda', fantasia: 'Bom Preço', pessoa: 'Empresa (CNPJ)', documento: '34.567.890/0001-12', segmento: 'Varejo', situacao: 'Ativo',
+      responsavel: 'Roberto Farias (gerente)', telefone: '(92) 3088-7766', whatsapp: '(92) 99345-6789', horario: 'Todos os dias, 7h às 22h',
+      endereco: 'Av. Autaz Mirim', numero: '3100', bairro: 'Jorge Teixeira', cidade: 'Manaus', uf: 'AM',
+      contrato: 'Contrato mensal', valorMensal: 750, inicioContrato: d(-200), periodicidadeVisita: 30, diaPreferido: 'Terça ou quarta antes das 9h' });
+    add('clientes', { id: 'c4', nome: 'Colégio Novo Saber', pessoa: 'Empresa (CNPJ)', documento: '45.678.901/0001-23', segmento: 'Educação', situacao: 'Ativo',
+      responsavel: 'Irmã Teresa (diretora)', telefone: '(92) 3655-9080', email: 'secretaria@novosaber.edu.br',
+      endereco: 'Rua das Palmeiras', numero: '45', bairro: 'Cidade Nova', cidade: 'Manaus', uf: 'AM',
+      contrato: 'Avulso (chamado)', preventivaPadrao: 120, obs: 'Laboratório de informática com 20 máquinas iguais.' });
+
+    let n = 0;
+    const eq = (o) => add('equipamentos', { status: 'Ativo', codigo: 'EQ-' + String(++n).padStart(4, '0'), ultimaPreventivaAnterior: d(-40), ...o });
+    const pc = (o) => eq({ tipo: 'computador', formato: 'Desktop (gabinete)', soArquitetura: '64 bits', soAtivado: 'Sim', conexao: 'Cabo (rede)', mascara: '255.255.255.0', propriedade: 'Do cliente', ...o });
+    // Clínica
+    pc({ id: 'e1', clienteId: 'c1', nome: 'PC Recepção 01', marca: 'Dell', modelo: 'OptiPlex 3080 SFF', numeroSerie: '7XK2F93', patrimonio: 'SP-001', setor: 'Recepção', local: 'Balcão', andar: '3º', responsavel: 'Juliana',
+      processador: 'Intel Core i5-10500 3.1GHz', nucleos: '6 / 12', placaMae: 'Dell 0M5F35', bios: '2.18.0', memoriaTotal: 16, memoriaTipo: 'DDR4', memoriaPentes: '2x 8GB 2666MHz', memoriaSlots: '2 / 2', placaVideo: 'Intel UHD 630 (integrada)', fonte: 'Dell 200W',
+      discos: [{ tipo: 'SSD NVMe', capacidade: '256 GB', marcaModelo: 'Kingston NV2', serie: '50026B7685A1', saude: '96%' }, { tipo: 'HD', capacidade: '1 TB', marcaModelo: 'Seagate Barracuda', saude: 'OK' }],
+      so: 'Windows 11 Pro', soVersao: '23H2 (22631)', soLicenca: 'OEM (de fábrica)', nomeMaquina: 'SP-RECEPCAO01', dominio: 'WORKGROUP', usuariosLocais: 'recepcao, admin', office: 'Microsoft 365 Business', antivirus: 'ESET Endpoint', antivirusValidade: d(10), backup: 'OneDrive (pasta Documentos)',
+      softwares: 'Clinicorp (agenda)\nGoogle Chrome\nAdobe Acrobat Reader\nAnyDesk', ipTipo: 'Fixo (manual)', ip: '192.168.0.20', gateway: '192.168.0.1', dns: '192.168.0.1', mac: 'B0:7B:25:1A:44:C2', pontoRede: 'Switch porta 3',
+      acessoRemoto: 'AnyDesk', acessoRemotoId: '845 112 903', monitores: [{ marcaModelo: 'Dell P2222H', polegadas: '22', serie: 'CN0XYZ123', conexao: 'DisplayPort' }], teclado: 'Dell KM3322W sem fio', nobreakLigado: 'Nobreak recepção',
+      dataAquisicao: d(-700), fornecedor: 'Dell Store', notaFiscal: '45872', valor: 4300, garantiaAte: d(20), ultimaPreventivaAnterior: d(-200) });
+    pc({ id: 'e2', clienteId: 'c1', nome: 'PC Consultório 1', marca: 'Positivo', modelo: 'Master D3400', numeroSerie: 'PM3400A77812', setor: 'Consultórios', local: 'Consultório 1', andar: '3º', responsavel: 'Dra. Paula',
+      processador: 'Intel Core i3-10100', memoriaTotal: 8, memoriaTipo: 'DDR4', memoriaPentes: '1x 8GB', memoriaSlots: '1 / 2', discos: [{ tipo: 'SSD SATA', capacidade: '240 GB', marcaModelo: 'WD Green', saude: '91%' }],
+      so: 'Windows 10 Pro', soVersao: '22H2', soLicenca: 'OEM (de fábrica)', nomeMaquina: 'SP-CONS01', office: 'LibreOffice', antivirus: 'Windows Defender', ipTipo: 'DHCP (automático)', ip: '192.168.0.31', mac: '00:E0:4C:68:12:9A',
+      acessoRemoto: 'AnyDesk', acessoRemotoId: '512 908 331', softwares: 'Clinicorp\nVisualizador de raio-X (Dabi)', monitores: [{ marcaModelo: 'AOC 22B1HS', polegadas: '21.5' }], ultimaPreventivaAnterior: d(-190) });
+    pc({ id: 'e3', clienteId: 'c1', tipo: 'notebook', formato: 'Notebook', nome: 'Notebook Dra. Paula', marca: 'Lenovo', modelo: 'IdeaPad 3 15ITL6', numeroSerie: 'PF3A9KXT', setor: 'Diretoria', responsavel: 'Dra. Paula',
+      processador: 'Intel Core i7-1165G7', memoriaTotal: 16, memoriaTipo: 'DDR4', discos: [{ tipo: 'SSD NVMe', capacidade: '512 GB', saude: '99%' }], bateria: 'L20M3PF0 — saúde 82%', carregador: 'Lenovo 65W USB-C',
+      so: 'Windows 11 Home', soLicenca: 'OEM (de fábrica)', nomeMaquina: 'NB-PAULA', conexao: 'Wi-Fi', ipTipo: 'DHCP (automático)', macWifi: '3C:A6:F6:22:10:0B', office: 'Microsoft 365 Personal', antivirus: 'Windows Defender',
+      dataAquisicao: d(-250), garantiaAte: d(115), ultimaPreventivaAnterior: d(-100) });
+    eq({ id: 'e4', clienteId: 'c1', tipo: 'impressora', nome: 'Multifuncional Recepção', marca: 'Brother', modelo: 'DCP-L5652DN', numeroSerie: 'U64218K2N445112', patrimonio: 'SP-010', setor: 'Recepção', local: 'Ao lado do balcão', andar: '3º',
+      categoria: 'Laser', funcao: 'Multifuncional (imprime, copia e digitaliza)', cor: 'Monocromática (preto)', papel: 'A4 / Carta', duplex: 'Sim', adf: 'Sim', digitalizacao: 'Pasta de rede \\\\SP-RECEPCAO01\\Digitalizados', velocidade: 42,
+      usuariosImp: 'Recepção e consultórios', conexao: 'Cabo (rede)', ipTipo: 'Reserva no DHCP', ip: '192.168.0.50', mascara: '255.255.255.0', gateway: '192.168.0.1', mac: '3C:2A:F4:91:0C:7E', nomeMaquina: 'BRW3C2AF4910C7E',
+      fila: 'Brother Recepcao', driver: 'Brother DCP-L5652DN PCL', painelWeb: 'http://192.168.0.50', toner: 'TN-3442 (3.000 pág.)', rendimento: 3000, cilindro: 'DR-3440', contadorInicial: 1200, contadorAtual: 18450, dataContador: d(-35),
+      propriedade: 'Locado (RM Informática)', contrato: 'LOC-2025-014', valorLocacao: 180, franquia: 2000, valorExcedente: 0.08 });
+    eq({ id: 'e5', clienteId: 'c1', tipo: 'rede', nome: 'Roteador principal', marca: 'TP-Link', modelo: 'Archer C80', numeroSerie: '22371M4001234', setor: 'Recepção', local: 'Rack da recepção',
+      funcaoRede: 'Roteador Wi-Fi', ip: '192.168.0.1', mascara: '255.255.255.0', mac: '5C:A6:E6:11:22:33', painelWeb: 'http://192.168.0.1', firmware: '1.1.8 Build 20240112', portas: '4x Gigabit', dhcp: '192.168.0.100 a 192.168.0.200',
+      provedor: 'Fibra Norte', plano: '500 Mega', tipoWan: 'PPPoE', circuito: 'Cliente 887412', suporteProvedor: '(92) 4003-1234',
+      ssids: [{ ssid: 'SORRISO_ADM', banda: '2.4 + 5 GHz', seguranca: 'WPA2/WPA3', uso: 'Funcionários', oculta: 'Não' }, { ssid: 'SORRISO_PACIENTES', banda: '2.4 GHz', seguranca: 'WPA2', uso: 'Visitantes', oculta: 'Não' }] });
+    eq({ id: 'e6', clienteId: 'c1', tipo: 'dvr', nome: 'DVR câmeras', marca: 'Intelbras', modelo: 'MHDX 1108', numeroSerie: 'QJ7A1234567AB', setor: 'Diretoria', local: 'Armário da sala da Dra.',
+      tipoDvr: 'DVR', canais: 8, camerasQtd: 6, tecnologia: 'Multi-HD', resolucao: '1080p', hd: '1 TB WD Purple', diasGravacao: 21, firmware: '4.0.1',
+      ip: '192.168.0.60', mascara: '255.255.255.0', gateway: '192.168.0.1', portaHttp: '80', portaServico: '37777', portaRtsp: '554', p2p: 'QJ7A1234567AB', app: 'Intelbras iSIC Lite',
+      cameras: [{ canal: '1', localCam: 'Entrada', modelo: 'VHD 1120 B', formato: 'Bullet', situacao: 'OK' }, { canal: '2', localCam: 'Recepção', modelo: 'VHD 1120 D', formato: 'Dome', situacao: 'OK' }, { canal: '3', localCam: 'Corredor', modelo: 'VHD 1120 D', formato: 'Dome', situacao: 'OK' },
+        { canal: '4', localCam: 'Estacionamento', modelo: 'VHD 1220 B', formato: 'Bullet', situacao: 'Com defeito' }, { canal: '5', localCam: 'Esterilização', modelo: 'VHD 1120 D', formato: 'Dome', situacao: 'OK' }, { canal: '6', localCam: 'Escada', modelo: 'VHD 1120 D', formato: 'Dome', situacao: 'OK' }],
+      ultimaPreventivaAnterior: d(-85) });
+    eq({ id: 'e7', clienteId: 'c1', tipo: 'nobreak', nome: 'Nobreak recepção', marca: 'SMS', modelo: 'Net Winner 1200VA', setor: 'Recepção', categoriaNb: 'Nobreak interativo', potencia: '1200 VA', tensao: 'Bivolt', bateriaNb: '2x 12V 7Ah', trocaBateria: d(-420), autonomia: 15, ligados: 'PC Recepção 01, roteador, DVR' });
+    // Contabilidade
+    pc({ id: 'e8', clienteId: 'c2', tipo: 'servidor', formato: 'Servidor torre', nome: 'Servidor de arquivos', marca: 'Dell', modelo: 'PowerEdge T140', numeroSerie: 'J8K2LM3', patrimonio: 'AL-100', setor: 'TI', local: 'Sala do servidor', responsavel: 'Carlos Andrade',
+      processador: 'Intel Xeon E-2224 3.4GHz', nucleos: '4 / 4', memoriaTotal: 32, memoriaTipo: 'DDR4', memoriaPentes: '2x 16GB ECC', memoriaSlots: '2 / 4', fonte: '365W',
+      discos: [{ tipo: 'SSD SATA', capacidade: '480 GB', marcaModelo: 'Samsung PM893 (sistema)', saude: '98%' }, { tipo: 'HD', capacidade: '4 TB', marcaModelo: 'WD Red Plus (RAID 1)', serie: 'WD-WX12A', saude: 'OK' }, { tipo: 'HD', capacidade: '4 TB', marcaModelo: 'WD Red Plus (RAID 1)', serie: 'WD-WX12B', saude: 'OK' }],
+      so: 'Windows Server 2022 Standard', soLicenca: 'Volume / corporativa', nomeMaquina: 'AL-SRV01', dominio: 'andradelima.local', antivirus: 'Kaspersky Small Office', antivirusValidade: d(140), backup: 'Veeam diário para HD externo + nuvem (Backblaze)',
+      softwares: 'Domínio Sistemas (banco de dados)\nFortes AC\nCompartilhamento de arquivos', ipTipo: 'Fixo (manual)', ip: '192.168.10.5', gateway: '192.168.10.1', dns: '192.168.10.5, 8.8.8.8', mac: 'D0:94:66:AA:10:05',
+      acessoRemoto: 'Área de Trabalho Remota (RDP)', acessoRemotoId: '192.168.10.5:3389', nobreakLigado: 'APC 1500VA', dataAquisicao: d(-900), garantiaAte: d(-170), periodicidade: 90, ultimaPreventivaAnterior: d(-95) });
+    for (const [i, nome, resp, ip] of [[9, 'PC Fiscal', 'Mariana', '21'], [10, 'PC Contábil', 'Rafael', '22'], [11, 'PC Departamento Pessoal', 'Simone', '23']]) {
+      pc({ id: 'e' + i, clienteId: 'c2', nome, marca: 'Lenovo', modelo: 'ThinkCentre M70s', numeroSerie: 'MJ0F' + (4400 + i), setor: nome.replace('PC ', ''), responsavel: resp, processador: 'Intel Core i5-12400', memoriaTotal: 16, memoriaTipo: 'DDR4',
+        discos: [{ tipo: 'SSD NVMe', capacidade: '512 GB', saude: '97%' }], so: 'Windows 11 Pro', soLicenca: 'OEM (de fábrica)', nomeMaquina: 'AL-' + nome.split(' ').pop().toUpperCase().slice(0, 8), dominio: 'andradelima.local',
+        office: 'Microsoft 365 Business', antivirus: 'Kaspersky Small Office', antivirusValidade: d(140), ipTipo: 'Reserva no DHCP', ip: '192.168.10.' + ip, gateway: '192.168.10.1', monitores: [{ marcaModelo: 'LG 24MK430H', polegadas: '24' }, { marcaModelo: 'LG 24MK430H', polegadas: '24' }],
+        acessoRemoto: 'AnyDesk', ultimaPreventivaAnterior: d(-112) });
+    }
+    eq({ id: 'e12', clienteId: 'c2', tipo: 'impressora', nome: 'Multifuncional escritório', marca: 'HP', modelo: 'LaserJet Pro M428fdw', numeroSerie: 'PHBBM12345', setor: 'Escritório', local: 'Corredor', categoria: 'Laser', funcao: 'Multifuncional com fax', cor: 'Monocromática (preto)',
+      duplex: 'Sim', adf: 'Sim', digitalizacao: 'E-mail e pasta de rede', velocidade: 38, conexao: 'Cabo (rede)', ipTipo: 'Fixo (manual)', ip: '192.168.10.40', mac: 'A0:8C:FD:12:34:56', painelWeb: 'http://192.168.10.40',
+      toner: 'HP 58A (CF258A)', rendimento: 3000, contadorAtual: 52310, dataContador: d(-10), propriedade: 'Do cliente' });
+    eq({ id: 'e13', clienteId: 'c2', tipo: 'rede', nome: 'Roteador / firewall', marca: 'MikroTik', modelo: 'hAP ac²', numeroSerie: 'HCQ08A1B2C3', setor: 'TI', local: 'Rack', funcaoRede: 'Firewall', ip: '192.168.10.1', painelWeb: 'http://192.168.10.1', firmware: 'RouterOS 7.14',
+      dhcp: '192.168.10.100 a 192.168.10.199', provedor: 'Vivo Empresas', plano: '600 Mega + IP fixo', tipoWan: 'IP fixo', ipWan: '200.150.10.20', vlans: 'VLAN 10 escritório\nVLAN 20 visitantes',
+      ssids: [{ ssid: 'ANDRADE_LIMA', banda: '2.4 + 5 GHz', seguranca: 'WPA2', uso: 'Funcionários' }, { ssid: 'AL_VISITANTES', banda: '2.4 GHz', seguranca: 'WPA2', uso: 'Visitantes' }] });
+    eq({ id: 'e14', clienteId: 'c2', tipo: 'nobreak', nome: 'Nobreak do servidor', marca: 'APC', modelo: 'Back-UPS 1500VA', categoriaNb: 'Nobreak senoidal', potencia: '1500 VA', tensao: '220V', trocaBateria: d(-150), autonomia: 25, ligados: 'Servidor de arquivos e roteador' });
+    // Supermercado
+    pc({ id: 'e15', clienteId: 'c3', nome: 'PC Caixa 01', formato: 'Mini PC', marca: 'Bematech', modelo: 'RC-8400', numeroSerie: 'BM84001122', setor: 'Frente de caixa', local: 'Caixa 1', processador: 'Intel Celeron J4125', memoriaTotal: 4, memoriaTipo: 'DDR4',
+      discos: [{ tipo: 'SSD SATA', capacidade: '120 GB', saude: '88%' }], so: 'Windows 10 IoT', soLicenca: 'OEM (de fábrica)', nomeMaquina: 'BP-CAIXA01', ip: '192.168.1.11', ipTipo: 'Fixo (manual)', softwares: 'PDV Linx\nTEF Sitef', ultimaPreventivaAnterior: d(-60) });
+    pc({ id: 'e16', clienteId: 'c3', nome: 'PC Caixa 02', formato: 'Mini PC', marca: 'Bematech', modelo: 'RC-8400', numeroSerie: 'BM84001123', setor: 'Frente de caixa', local: 'Caixa 2', processador: 'Intel Celeron J4125', memoriaTotal: 4, memoriaTipo: 'DDR4',
+      discos: [{ tipo: 'SSD SATA', capacidade: '120 GB', saude: '72%' }], so: 'Windows 10 IoT', nomeMaquina: 'BP-CAIXA02', ip: '192.168.1.12', ipTipo: 'Fixo (manual)', softwares: 'PDV Linx\nTEF Sitef', status: 'Em manutenção', ultimaPreventivaAnterior: d(-60) });
+    eq({ id: 'e17', clienteId: 'c3', tipo: 'impressora', nome: 'Impressora de cupom Caixa 01', marca: 'Elgin', modelo: 'i9', numeroSerie: 'EL9A77001', setor: 'Frente de caixa', local: 'Caixa 1', categoria: 'Térmica (etiquetas/cupom)', funcao: 'Só impressora', papel: 'Bobina', conexao: 'USB', computadorHost: 'e15', driver: 'Elgin i9 (USB)' });
+    eq({ id: 'e18', clienteId: 'c3', tipo: 'impressora', nome: 'Impressora escritório', marca: 'Epson', modelo: 'EcoTank L4260', numeroSerie: 'X5HK012345', setor: 'Administração', local: 'Escritório da gerência', categoria: 'Tanque de tinta', funcao: 'Multifuncional (imprime, copia e digitaliza)', cor: 'Colorida',
+      duplex: 'Sim', conexao: 'Wi-Fi', ipTipo: 'DHCP (automático)', ip: '192.168.1.60', toner: 'Tintas Epson 544 (BK, C, M, Y)', contadorAtual: 8120, dataContador: d(-12), ultimaPreventivaAnterior: d(-100) });
+    eq({ id: 'e19', clienteId: 'c3', tipo: 'dvr', nome: 'NVR câmeras loja', marca: 'Hikvision', modelo: 'DS-7616NI-Q2', numeroSerie: 'DS7616-K12345', setor: 'Administração', local: 'Sala de monitoramento', tipoDvr: 'NVR', canais: 16, camerasQtd: 14, tecnologia: 'IP', resolucao: '4 MP',
+      hd: '2x 4 TB WD Purple', diasGravacao: 30, ip: '192.168.1.80', portaHttp: '80', portaServico: '8000', p2p: 'K12345678', app: 'Hik-Connect', ultimaPreventivaAnterior: d(-95),
+      cameras: [{ canal: '1', localCam: 'Entrada principal', formato: 'Bullet', situacao: 'OK' }, { canal: '2', localCam: 'Caixas', formato: 'Dome', situacao: 'OK' }, { canal: '3', localCam: 'Açougue', formato: 'Dome', situacao: 'OK' }, { canal: '4', localCam: 'Depósito', formato: 'Bullet', situacao: 'Desligada' }] });
+    eq({ id: 'e20', clienteId: 'c3', tipo: 'rede', nome: 'Roteador loja', marca: 'Intelbras', modelo: 'Action RG 1200', funcaoRede: 'Roteador Wi-Fi', ip: '192.168.1.1', painelWeb: 'http://192.168.1.1', provedor: 'Claro', plano: '300 Mega', tipoWan: 'DHCP',
+      ssids: [{ ssid: 'BOMPRECO_ADM', banda: '2.4 + 5 GHz', seguranca: 'WPA2', uso: 'Funcionários', oculta: 'Sim' }] });
+    // Colégio
+    for (const i of [21, 22, 23]) pc({ id: 'e' + i, clienteId: 'c4', nome: 'Laboratório PC ' + String(i - 20).padStart(2, '0'), marca: 'Daten', modelo: 'DC4E', numeroSerie: 'DTN44' + (1000 + i), setor: 'Laboratório de informática', local: 'Bancada ' + (i - 20), andar: 'Térreo',
+      processador: 'Intel Core i3-12100', memoriaTotal: 8, memoriaTipo: 'DDR4', discos: [{ tipo: 'SSD SATA', capacidade: '240 GB', saude: '95%' }], so: 'Windows 11 Pro Education', soLicenca: 'Volume / corporativa', nomeMaquina: 'LAB-' + String(i - 20).padStart(2, '0'),
+      ipTipo: 'DHCP (automático)', softwares: 'Scratch\nLibreOffice\nGoogle Chrome', ultimaPreventivaAnterior: d(-110) });
+    eq({ id: 'e24', clienteId: 'c4', tipo: 'impressora', nome: 'Impressora secretaria', marca: 'Kyocera', modelo: 'ECOSYS M2040dn', numeroSerie: 'VCF9Z12345', setor: 'Secretaria', categoria: 'Laser', funcao: 'Multifuncional (imprime, copia e digitaliza)', cor: 'Monocromática (preto)',
+      conexao: 'Cabo (rede)', ip: '192.168.5.30', toner: 'TK-1175', contadorAtual: 96400, dataContador: d(-130), ultimaPreventivaAnterior: d(-130) });
+    eq({ id: 'e25', clienteId: 'c4', tipo: 'rede', nome: 'Switch laboratório', marca: 'TP-Link', modelo: 'TL-SG1024D', funcaoRede: 'Switch', portas: '24x Gigabit', setor: 'Laboratório de informática', local: 'Rack do laboratório' });
+
+    // atendimentos
+    const at = (o) => add('manutencoes', { status: 'Concluído', tecnico: 'Ricardo Martins', checklist: [], contadores: {}, pecas: [], ...o });
+    at({ id: 'm1', clienteId: 'c1', data: d(-35), horaInicio: '08:00', horaFim: '11:30', tipo: 'Visita periódica', equipamentos: ['e1', 'e2', 'e4', 'e5'], preventivaEquip: ['e4'], contadores: { e4: 18450 },
+      checklist: ['Limpeza interna', 'Limpeza dos rolos de tração', 'Leitura do contador de páginas', 'Verificação do roteador / Wi-Fi'], descricao: 'Visita mensal. Limpeza da multifuncional, atualização do Windows na recepção e conferência do Wi-Fi.',
+      pendencias: 'Câmera do estacionamento (canal 4) sem imagem: levar conector BNC e fonte 12V.', responsavelCliente: 'Juliana', valor: 0 });
+    at({ id: 'm2', clienteId: 'c1', data: d(-80), tipo: 'Manutenção corretiva', equipamentos: ['e2'], problema: 'Computador do consultório 1 muito lento.', descricao: 'Troca do HD por SSD 240GB e reinstalação dos programas.',
+      pecas: [{ peca: 'SSD WD Green 240GB', qtd: '1', valor: '189.90', equipamento: 'e2' }, { peca: 'Mão de obra (formatação)', qtd: '1', valor: '120', equipamento: 'e2' }], valor: 309.9 });
+    at({ id: 'm3', clienteId: 'c2', data: d(-10), horaInicio: '14:00', horaFim: '16:00', tipo: 'Visita periódica', equipamentos: ['e8', 'e12', 'e13'], checklist: ['Verificação do backup', 'Atualizações do sistema operacional', 'Verificação de saúde do HD/SSD (SMART)'],
+      contadores: { e12: 52310 }, descricao: 'Backup do Veeam conferido (últimos 15 dias OK). Atualizações do Windows Server aplicadas. RAID íntegro.', responsavelCliente: 'Carlos Andrade' });
+    at({ id: 'm4', clienteId: 'c2', data: d(-25), tipo: 'Visita periódica', equipamentos: ['e8', 'e9', 'e10', 'e11'], descricao: 'Instalação da atualização do Domínio Sistemas nas estações.' });
+    at({ id: 'm5', clienteId: 'c3', data: d(-12), tipo: 'Visita periódica', equipamentos: ['e15', 'e16', 'e19'], descricao: 'Conferência das câmeras e dos caixas. SSD do Caixa 02 com 72% de saúde: recomendada a troca.',
+      pendencias: 'Trocar SSD do Caixa 02. Câmera do depósito desligada (cabo rompido).', responsavelCliente: 'Roberto' });
+    at({ id: 'm6', clienteId: 'c3', data: d(-3), tipo: 'Manutenção corretiva', status: 'Aguardando peça', equipamentos: ['e16'], problema: 'Caixa 02 travando na abertura do PDV.', descricao: 'Clonagem do SSD iniciada. Aguardando SSD novo do fornecedor.', novaSituacao: 'Em manutenção' });
+    at({ id: 'm7', clienteId: 'c4', data: d(3), horaInicio: '08:00', tipo: 'Manutenção preventiva', status: 'Agendado', equipamentos: ['e21', 'e22', 'e23', 'e24'], problema: 'Preventiva do laboratório nas férias dos alunos.' });
+    at({ id: 'm8', clienteId: 'c4', data: d(-130), tipo: 'Manutenção preventiva', equipamentos: ['e24'], contadores: { e24: 96400 }, checklist: ['Limpeza interna', 'Verificação do cilindro/unidade de imagem'], descricao: 'Limpeza e troca do toner.', pecas: [{ peca: 'Toner TK-1175', qtd: '1', valor: '210', equipamento: 'e24' }], valor: 290 });
+    R.config.geral = { id: 'geral', empresa: 'RM Informática', diasAviso: 15, tecnicos: 'Ricardo Martins, Ana Souza' };
+
+    const creds = [
+      { cliente_id: 'c1', equipamento_id: 'e5', tipo: 'wifi', titulo: 'Wi-Fi funcionários', ssid: 'SORRISO_ADM', senha: 'Sorr1so@2025!' },
+      { cliente_id: 'c1', equipamento_id: 'e5', tipo: 'wifi', titulo: 'Wi-Fi pacientes', ssid: 'SORRISO_PACIENTES', senha: 'bemvindo2025', obs: 'Pode passar para os pacientes.' },
+      { cliente_id: 'c1', equipamento_id: 'e5', tipo: 'equipamento', titulo: 'Painel do roteador', usuario: 'admin', endereco: 'http://192.168.0.1', senha: 'Tp#Rm8812' },
+      { cliente_id: 'c1', equipamento_id: 'e6', tipo: 'equipamento', titulo: 'DVR Intelbras', usuario: 'admin', endereco: 'http://192.168.0.60', senha: 'Dvr@Sorriso60' },
+      { cliente_id: 'c1', tipo: 'provedor', titulo: 'PPPoE Fibra Norte', usuario: 'sorrisopleno@fibranorte', senha: 'fn887412' },
+      { cliente_id: 'c2', equipamento_id: 'e8', tipo: 'servidor', titulo: 'Administrador do domínio', usuario: 'ANDRADELIMA\\administrador', endereco: '192.168.10.5', senha: 'Srv!AL2024#k9' },
+      { cliente_id: 'c2', equipamento_id: 'e13', tipo: 'equipamento', titulo: 'MikroTik (Winbox)', usuario: 'rmadmin', endereco: '192.168.10.1', senha: 'Mk7@Andrade!' },
+      { cliente_id: 'c2', equipamento_id: 'e13', tipo: 'wifi', titulo: 'Wi-Fi escritório', ssid: 'ANDRADE_LIMA', senha: 'Contab@2024' },
+      { cliente_id: 'c2', tipo: 'email', titulo: 'E-mail do Carlos', usuario: 'carlos@andradelima.com.br', endereco: 'https://outlook.office.com', senha: 'Cr@ndrade99' },
+      { cliente_id: 'c3', equipamento_id: 'e19', tipo: 'equipamento', titulo: 'NVR Hikvision', usuario: 'admin', endereco: 'http://192.168.1.80', senha: 'Hik@BomPreco1' },
+      { cliente_id: 'c3', equipamento_id: 'e20', tipo: 'wifi', titulo: 'Wi-Fi administração', ssid: 'BOMPRECO_ADM', senha: 'BomPreco#Adm' },
+      { cliente_id: 'c3', tipo: 'sistema', titulo: 'PDV Linx (supervisor)', usuario: 'supervisor', senha: '4521' },
+    ].map((c, i) => ({ id: i + 1, usuario: '', endereco: '', ssid: '', obs: '', equipamento_id: null, criado_em: quando(-60), atualizado_em: quando(-60), ...c }));
+    return {
+      versao: 1, registros: R, creds, prox: { cred: creds.length + 1, usuario: 3, log: 4 },
+      usuarios: [
+        { id: 1, nome: 'Administrador', login: 'admin', senha: 'rm2026', perfil: 'admin', pode_senhas: 1, ativo: 1, criado_em: quando(-400) },
+        { id: 2, nome: 'Ricardo Martins', login: 'tecnico', senha: '1234', perfil: 'tecnico', pode_senhas: 0, ativo: 1, criado_em: quando(-300) },
+      ],
+      log: [
+        { id: 3, credencial_id: 4, titulo: 'DVR Intelbras', usuario_id: 1, usuario_nome: 'Administrador', acao: 'visualizou', ip: 'demonstração', quando: quando(-35, '09:12') },
+        { id: 2, credencial_id: 6, titulo: 'Administrador do domínio', usuario_id: 1, usuario_nome: 'Administrador', acao: 'visualizou', ip: 'demonstração', quando: quando(-10, '14:20') },
+        { id: 1, credencial_id: 7, titulo: 'MikroTik (Winbox)', usuario_id: 1, usuario_nome: 'Administrador', acao: 'trocou a senha', ip: 'demonstração', quando: quando(-10, '15:02') },
+      ],
+    };
+  }
+  let S;
+  try { S = JSON.parse(localStorage.getItem(CHAVE)); } catch {}
+  if (!S || !S.registros) S = exemplo();
+  const gravar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(S)); } catch {} };
+  const erro = (status, msg) => Object.assign(new Error(msg), { status });
+  const eu = () => S.usuarios.find((u) => u.login === sessao && u.ativo);
+  const pub = (u) => ({ id: u.id, nome: u.nome, login: u.login, perfil: u.perfil, pode_senhas: u.perfil === 'admin' || u.pode_senhas ? 1 : 0 });
+  const semSenha = (c) => { const { senha, ...r } = c; return { ...r, tem_senha: senha ? 1 : 0 }; };
+  const agora = () => { const x = new Date(); return isoData(x) + ' ' + x.toTimeString().slice(0, 8); };
+  const log = (u, c, acao) => S.log.unshift({ id: S.prox.log++, credencial_id: c.id, titulo: c.titulo, usuario_id: u.id, usuario_nome: u.nome, acao, ip: 'demonstração', quando: agora() });
+
+  async function api(metodo, url, corpo = {}) {
+    const [caminho, qs] = url.split('?');
+    const p = caminho.replace(/^\/api/, '');
+    if (metodo === 'POST' && p === '/login') {
+      const u = S.usuarios.find((x) => x.login === String(corpo.login || '').trim().toLowerCase() && x.ativo);
+      if (!u || u.senha !== corpo.senha) throw erro(401, 'Usuário ou senha incorretos');
+      sessao = u.login; try { sessionStorage.setItem('rminfo-demo-user', sessao); } catch {}
+      return pub(u);
+    }
+    if (p === '/logout') { sessao = null; try { sessionStorage.removeItem('rminfo-demo-user'); } catch {} return; }
+    const u = eu();
+    if (!u) throw erro(401, 'Faça login novamente');
+    const admin = u.perfil === 'admin', senhas = admin || u.pode_senhas;
+    const soAdmin = () => { if (!admin) throw erro(403, 'Somente administrador'); };
+    const soSenhas = () => { if (!senhas) throw erro(403, 'Você não tem permissão para ver as senhas'); };
+    let m;
+    if (p === '/me') return pub(u);
+    if (p === '/me/senha') { if (corpo.atual !== u.senha) throw erro(400, 'A senha atual está incorreta'); if (String(corpo.nova || '').length < 6) throw erro(400, 'A senha precisa ter pelo menos 6 caracteres'); u.senha = corpo.nova; gravar(); return; }
+    if (p === '/estado') {
+      const desde = Number(new URLSearchParams(qs).get('desde')) || 0;
+      const itens = [];
+      if (desde < S.versao) for (const [c, col] of Object.entries(S.registros)) for (const [id, dados] of Object.entries(col)) itens.push({ c, id, dados });
+      return { versao: S.versao, itens };
+    }
+    if (p === '/sync') {
+      let recusados = 0;
+      for (const op of corpo.ops || []) {
+        if (op.c === 'config' && !admin) { recusados++; continue; }
+        if (op.apagar) delete S.registros[op.c][op.id]; else S.registros[op.c][op.id] = op.dados;
+      }
+      S.versao++; gravar();
+      return { versao: S.versao, recusados };
+    }
+    if (p === '/usuarios' && metodo === 'GET') { soAdmin(); return S.usuarios.map(({ senha, ...r }) => r); }
+    if (p === '/usuarios' && metodo === 'POST') {
+      soAdmin();
+      const login = String(corpo.login || '').trim().toLowerCase();
+      if (!corpo.nome || !/^[a-z0-9._-]{3,30}$/.test(login)) throw erro(400, 'Informe o nome e um usuário com 3 a 30 letras ou números, sem espaço');
+      if (S.usuarios.some((x) => x.login === login)) throw erro(400, 'Esse usuário já existe');
+      if (String(corpo.senha || '').length < 6) throw erro(400, 'A senha precisa ter pelo menos 6 caracteres');
+      const n = { id: S.prox.usuario++, nome: corpo.nome.trim(), login, senha: corpo.senha, perfil: corpo.perfil === 'admin' ? 'admin' : 'tecnico', pode_senhas: corpo.pode_senhas ? 1 : 0, ativo: 1, criado_em: agora() };
+      S.usuarios.push(n); gravar(); return { id: n.id };
+    }
+    if ((m = /^\/usuarios\/(\d+)$/.exec(p))) {
+      soAdmin();
+      const a = S.usuarios.find((x) => x.id === Number(m[1]));
+      if (!a) throw erro(404, 'Usuário não encontrado');
+      if (a.id === u.id && (corpo.perfil !== 'admin' || corpo.ativo === false)) throw erro(400, 'Você não pode tirar o seu próprio acesso de administrador');
+      Object.assign(a, { nome: corpo.nome || a.nome, perfil: corpo.perfil || a.perfil, pode_senhas: corpo.pode_senhas ? 1 : 0, ativo: corpo.ativo === undefined ? a.ativo : corpo.ativo ? 1 : 0 });
+      if (corpo.senha) { if (corpo.senha.length < 6) throw erro(400, 'A senha precisa ter pelo menos 6 caracteres'); a.senha = corpo.senha; }
+      gravar(); return;
+    }
+    if (p === '/credenciais/log') { soAdmin(); return S.log; }
+    if (p === '/credenciais' && metodo === 'GET') { soSenhas(); return S.creds.map(semSenha); }
+    const lerCred = () => {
+      const tipo = corpo.tipo || 'outro', titulo = String(corpo.titulo || '').trim() || (tipo === 'wifi' && String(corpo.ssid || '').trim()) || '';
+      if (!titulo) throw erro(400, 'Informe uma descrição (ex.: "Roteador recepção" ou o nome da rede)');
+      return { tipo, titulo, cliente_id: corpo.cliente_id || null, equipamento_id: corpo.equipamento_id || null, usuario: corpo.usuario || '', endereco: corpo.endereco || '', ssid: corpo.ssid || '', obs: corpo.obs || '' };
+    };
+    if (p === '/credenciais' && metodo === 'POST') {
+      soSenhas();
+      const c = { id: S.prox.cred++, ...lerCred(), senha: corpo.senha || '', criado_em: agora(), atualizado_em: agora() };
+      S.creds.push(c); log(u, c, 'criou'); gravar(); return { id: c.id };
+    }
+    if ((m = /^\/credenciais\/(\d+)(\/revelar)?$/.exec(p))) {
+      soSenhas();
+      const c = S.creds.find((x) => x.id === Number(m[1]));
+      if (!c) throw erro(404, 'Senha não encontrada');
+      if (m[2]) { log(u, c, 'visualizou'); gravar(); return { senha: c.senha }; }
+      if (metodo === 'DELETE') { S.creds = S.creds.filter((x) => x !== c); log(u, c, 'apagou'); gravar(); return; }
+      Object.assign(c, lerCred(), { atualizado_em: agora() });
+      if (corpo.senha !== undefined) c.senha = corpo.senha;
+      log(u, c, corpo.senha === undefined ? 'editou' : 'trocou a senha'); gravar(); return;
+    }
+    throw erro(404, 'Rota não encontrada');
+  }
+  function restaurar() { S = exemplo(); gravar(); }
+  return { api, restaurar };
+})();
+
 // ---------------- comunicação com o servidor ----------------
 async function api(metodo, url, corpo) {
+  if (!ONLINE) {
+    try {
+      const r = await DEMO.api(metodo, url, corpo ? JSON.parse(JSON.stringify(corpo)) : undefined);
+      return r === undefined ? { ok: true } : JSON.parse(JSON.stringify(r));
+    } catch (e) {
+      if (e.status === 401 && !url.endsWith('/login')) { EU = null; telaLogin(); }
+      throw e;
+    }
+  }
   const r = await fetch(url, {
     method: metodo, credentials: 'same-origin',
     headers: { 'X-RM': '1', ...(corpo ? { 'Content-Type': 'application/json' } : {}) },
@@ -635,7 +912,7 @@ function htmlVisao(secoes, d) {
       let txt = esc(v);
       if (c.t === 'date') txt = dataBR(v);
       else if (c.t === 'select' && Array.isArray(c.op[0])) txt = esc((c.op.find((o) => o[0] === v) || [, v])[1]);
-      else if (c.t === 'equip') { const e = DB.equipamentos[v]; txt = e ? `<a href="#/equipamento/${esc(e.id)}">${esc(rotuloEquip(e))}</a>` : ''; }
+      else if (c.t === 'equip') { const e = DB.equipamentos[v]; txt = e ? `<a href="#equipamento-${esc(e.id)}">${esc(rotuloEquip(e))}</a>` : ''; }
       else if (c.k.startsWith('valor') && c.t === 'number') txt = moeda(v);
       else if (c.t === 'textarea') txt = esc(v).replace(/\n/g, '<br>');
       else if (c.k === 'painelWeb' && /^https?:\/\//i.test(v)) txt = `<a href="${esc(v)}" target="_blank" rel="noopener">${esc(v)}</a>`;
@@ -675,7 +952,15 @@ function modal({ titulo, corpo, salvar: aoSalvar, estreito, textoSalvar = 'Salva
   setTimeout(() => { const i = $('input:not([type=hidden]),select,textarea', form); if (i && window.innerWidth > 760) i.focus(); }, 30);
   return { form, fechar, fundo };
 }
-function confirmar(msg) { return window.confirm(msg); }
+function confirmar(msg) {
+  return new Promise((ok) => {
+    let resp = false;
+    const m = modal({ titulo: 'Confirme', estreito: true, textoSalvar: 'Confirmar',
+      corpo: `<p style="margin:0;white-space:pre-line">${esc(msg)}</p>`,
+      salvar: () => { resp = true; } });
+    new MutationObserver((_, obs) => { if (!m.fundo.isConnected) { obs.disconnect(); ok(resp); } }).observe(document.body, { childList: true });
+  });
+}
 
 // ---------------- regras de manutenção e visitas ----------------
 const rotuloEquip = (e) => [e.nome || nomeTipo(e.tipo), [e.marca, e.modelo].filter(Boolean).join(' ')].filter(Boolean).join(' — ') + (e.codigo ? ` (${e.codigo})` : '');
@@ -767,8 +1052,8 @@ function tabelaCreds(lista, { mostrarCliente = true } = {}) {
     const e = c.equipamento_id && DB.equipamentos[c.equipamento_id];
     return `<tr><td><b>${esc(c.titulo)}</b>${c.obs ? `<div class="suave peq">${esc(c.obs)}</div>` : ''}</td>
     <td><span class="tag">${esc(TIPOS_CRED_CURTO[c.tipo] || c.tipo)}</span></td>
-    ${mostrarCliente ? `<td>${c.cliente_id ? `<a href="#/cliente/${esc(c.cliente_id)}">${esc(nomeCliente(c.cliente_id))}</a>` : '<span class="suave">—</span>'}</td>` : ''}
-    <td>${e ? `<a href="#/equipamento/${esc(e.id)}">${esc(e.nome || rotuloEquip(e))}</a>` : '<span class="suave">—</span>'}</td>
+    ${mostrarCliente ? `<td>${c.cliente_id ? `<a href="#cliente-${esc(c.cliente_id)}">${esc(nomeCliente(c.cliente_id))}</a>` : '<span class="suave">—</span>'}</td>` : ''}
+    <td>${e ? `<a href="#equipamento-${esc(e.id)}">${esc(e.nome || rotuloEquip(e))}</a>` : '<span class="suave">—</span>'}</td>
     <td class="mono">${esc(c.ssid || '')}${c.ssid && c.usuario ? '<br>' : ''}${esc(c.usuario || '')}${c.usuario ? ` <button class="btn link peq" data-copiar="${esc(c.usuario)}">copiar</button>` : ''}</td>
     <td>${c.tem_senha ? `<span class="senha-val" data-senha-de="${c.id}">••••••••</span> <button class="btn link peq" data-ver="${c.id}">mostrar</button><button class="btn link peq" data-copiar-senha="${c.id}">copiar</button>` : '<span class="suave">sem senha</span>'}</td>
     <td class="esconde-cel mono peq">${c.endereco ? (/^https?:\/\//i.test(c.endereco) ? `<a href="${esc(c.endereco)}" target="_blank" rel="noopener">${esc(c.endereco)}</a>` : esc(c.endereco)) : ''}</td>
@@ -830,7 +1115,7 @@ function formCred(c, pre = {}, aoMudar) {
   $('[data-gerar]', F).onclick = () => { F.elements.senha.value = gerarSenha(); };
   const ap = $('[data-apagar-cred]', F);
   if (ap) ap.onclick = async () => {
-    if (!confirmar('Apagar esta senha? Não dá para desfazer.')) return;
+    if (!await confirmar('Apagar esta senha? Não dá para desfazer.')) return;
     try { await api('DELETE', '/api/credenciais/' + c.id); await carregarCreds(true); m.fechar(); toast('Senha apagada'); aoMudar && aoMudar(); } catch (e) { toast(e.message, 1); }
   };
 }
@@ -843,7 +1128,12 @@ function telaLogin(msg) {
     ${msg ? `<div class="aviso-caixa">${esc(msg)}</div>` : ''}
     <div class="campo"><label>Usuário</label><input name="login" autocomplete="username" required autofocus></div>
     <div class="campo"><label>Senha</label><input name="senha" type="password" autocomplete="current-password" required></div>
-    <button class="btn pri" style="width:100%;justify-content:center;padding:10px">Entrar</button></form></div>`;
+    <button class="btn pri" style="width:100%;justify-content:center;padding:10px">Entrar</button>
+    ${ONLINE ? '' : `<div class="demo-cred"><div class="suave peq" style="font-weight:600">DEMONSTRAÇÃO · toque para preencher</div>
+      <button type="button" data-demo="admin|rm2026"><b>Administrador</b> · usuário <code>admin</code> senha <code>rm2026</code><small>Acesso completo, inclusive senhas e usuários</small></button>
+      <button type="button" data-demo="tecnico|1234"><b>Técnico</b> · usuário <code>tecnico</code> senha <code>1234</code><small>Cadastros e atendimentos, sem o cofre de senhas</small></button>
+    </div>`}</form></div>`;
+  $$('[data-demo]').forEach((b) => (b.onclick = () => { const [l, s] = b.dataset.demo.split('|'); $('#f-login').login.value = l; $('#f-login').senha.value = s; $('#f-login').senha.focus(); }));
   $('#f-login').onsubmit = async (ev) => {
     ev.preventDefault();
     const F = ev.target;
@@ -859,15 +1149,21 @@ const MENU = [
   ['senhas', 'Senhas', () => podeSenhas()], ['usuarios', 'Usuários', () => ehAdmin()], ['config', 'Configurações', () => ehAdmin()],
 ];
 function casca(conteudo) {
-  const rota = (location.hash.slice(2) || 'painel').split('/')[0];
+  const rota = rotaAtual()[0];
   const ativo = { cliente: 'clientes', equipamento: 'equipamentos' }[rota] || rota;
   const pend = pendencias().atrasos;
   $('#raiz').innerHTML = `<div class="app">
     <aside class="lado" id="lado"><div class="marca"><div class="logo">RM</div><div>${esc(cfg().empresa)}<small>Controle de inventário</small></div></div>
-      <nav class="menu">${MENU.filter((m) => !m[2] || m[2]()).map(([k, l]) => `<a href="#/${k}" class="${k === ativo ? 'ativo' : ''}">${l}${k === 'painel' && pend ? `<span class="bolha" title="Itens atrasados">${pend}</span>` : ''}</a>`).join('')}</nav>
-      <div class="usuario-box">${esc(EU.nome)} · ${EU.perfil === 'admin' ? 'administrador' : 'técnico'}<br><a href="#/conta">Minha senha</a> · <a href="#" id="sair">Sair</a></div></aside>
+      <nav class="menu">${MENU.filter((m) => !m[2] || m[2]()).map(([k, l]) => `<a href="#${k}" class="${k === ativo ? 'ativo' : ''}">${l}${k === 'painel' && pend ? `<span class="bolha" title="Itens atrasados">${pend}</span>` : ''}</a>`).join('')}</nav>
+      <div class="usuario-box">${esc(EU.nome)} · ${EU.perfil === 'admin' ? 'administrador' : 'técnico'}<br><a href="#conta">Minha senha</a> · <a href="#" id="sair">Sair</a>${ONLINE ? '' : '<div class="demo-tag">Demonstração com dados fictícios<br><a href="#" id="restaurar">Restaurar dados de exemplo</a></div>'}</div></aside>
     <main class="principal" id="principal">${conteudo}</main></div>`;
   $('#sair').onclick = async (e) => { e.preventDefault(); try { await api('POST', '/api/logout'); } catch {} EU = null; CREDS = null; telaLogin(); };
+  const rs = $('#restaurar');
+  if (rs) rs.onclick = async (e) => {
+    e.preventDefault();
+    if (!(await confirmar('Voltar a demonstração ao estado inicial? Tudo o que você cadastrou ou alterou aqui será descartado.'))) return;
+    DEMO.restaurar(); await iniciar(); toast('Dados de exemplo restaurados');
+  };
   $$('[data-menu]').forEach((b) => (b.onclick = () => $('#lado').classList.toggle('aberto')));
   $('#principal').addEventListener('click', (e) => { if (!e.target.closest('[data-menu]')) $('#lado').classList.remove('aberto'); });
 }
@@ -879,7 +1175,7 @@ const FILTRO = { equip: { q: '', cliente: '', tipo: '', setor: '', status: '', p
 
 function render(irTopo) {
   if (!EU) return telaLogin();
-  const [rota, id] = location.hash.slice(2).split('/');
+  const [rota, id] = rotaAtual();
   const telas = { painel: telaPainel, clientes: telaClientes, cliente: telaCliente, equipamentos: telaEquipamentos, equipamento: telaEquipamento,
     atendimentos: telaAtendimentos, senhas: telaSenhas, usuarios: telaUsuarios, config: telaConfig, conta: telaConta };
   (telas[rota] || telaPainel)(id);
@@ -907,15 +1203,15 @@ function telaPainel() {
 
   casca(topo('Painel', `<button class="btn" id="b-notif">Ativar avisos</button><button class="btn pri" data-novo-atend>+ Registrar atendimento</button>`, `Hoje é ${new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}`) + `
   <div class="grade g4">
-    <div class="card num-card" data-ir="#/clientes"><div class="rot">Clientes ativos</div><div class="num">${Object.values(DB.clientes).filter((c) => c.situacao !== 'Inativo').length}</div></div>
-    <div class="card num-card" data-ir="#/equipamentos"><div class="rot">Equipamentos ativos</div><div class="num">${eqAtivos.length}</div></div>
+    <div class="card num-card" data-ir="#clientes"><div class="rot">Clientes ativos</div><div class="num">${Object.values(DB.clientes).filter((c) => c.situacao !== 'Inativo').length}</div></div>
+    <div class="card num-card" data-ir="#equipamentos"><div class="rot">Equipamentos ativos</div><div class="num">${eqAtivos.length}</div></div>
     <div class="card num-card"><div class="rot">Visitas atrasadas</div><div class="num" style="color:${nAtrasoVis ? 'var(--vermelho)' : 'inherit'}">${nAtrasoVis}</div><div class="suave peq">${visitas.length - nAtrasoVis} nos próximos ${C.diasAviso} dias</div></div>
-    <div class="card num-card" data-ir="#/equipamentos" data-prev="vencer"><div class="rot">Preventivas atrasadas</div><div class="num" style="color:${nAtrasoPrev ? 'var(--vermelho)' : 'inherit'}">${nAtrasoPrev}</div><div class="suave peq">${prev.length - nAtrasoPrev} nos próximos ${C.diasAviso} dias</div></div>
+    <div class="card num-card" data-ir="#equipamentos" data-prev="vencer"><div class="rot">Preventivas atrasadas</div><div class="num" style="color:${nAtrasoPrev ? 'var(--vermelho)' : 'inherit'}">${nAtrasoPrev}</div><div class="suave peq">${prev.length - nAtrasoPrev} nos próximos ${C.diasAviso} dias</div></div>
   </div>
   <div class="grade g2">
     <div class="card"><h2>Visitas periódicas a fazer</h2>
       ${visitas.length ? `<div class="tabela-wrap"><table><thead><tr><th>Cliente</th><th>Última visita</th><th>Próxima</th><th></th></tr></thead><tbody>
-      ${visitas.map(({ c, s }) => `<tr><td><a href="#/cliente/${esc(c.id)}">${esc(c.nome)}</a>${c.telefone || c.whatsapp ? `<div class="suave peq">${esc(c.whatsapp || c.telefone)}</div>` : ''}</td><td>${dataBR(s.ultima) || '<span class="suave">nunca</span>'}</td><td>${tagSituacao(s)}${s.agendado ? ' <span class="tag azul">agendada</span>' : ''}</td><td><button class="btn peq" data-novo-atend data-cli="${esc(c.id)}" data-tipo="Visita periódica">Registrar</button></td></tr>`).join('')}
+      ${visitas.map(({ c, s }) => `<tr><td><a href="#cliente-${esc(c.id)}">${esc(c.nome)}</a>${c.telefone || c.whatsapp ? `<div class="suave peq">${esc(c.whatsapp || c.telefone)}</div>` : ''}</td><td>${dataBR(s.ultima) || '<span class="suave">nunca</span>'}</td><td>${tagSituacao(s)}${s.agendado ? ' <span class="tag azul">agendada</span>' : ''}</td><td><button class="btn peq" data-novo-atend data-cli="${esc(c.id)}" data-tipo="Visita periódica">Registrar</button></td></tr>`).join('')}
       </tbody></table></div>` : `<div class="vazio">Nenhuma visita atrasada ou para os próximos ${C.diasAviso} dias.</div>`}
     </div>
     <div class="card"><h2>Agendados</h2>
@@ -925,8 +1221,8 @@ function telaPainel() {
     </div>
   </div>
   <div class="card"><h2>Manutenções preventivas a fazer</h2>
-    ${grupos.length ? grupos.map(({ cid, l }) => `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b><a href="#/cliente/${esc(cid)}">${esc(nomeCliente(cid))}</a></b> <span class="suave peq">${l.length} equipamento${l.length > 1 ? 's' : ''}</span><span style="flex:1"></span><button class="btn peq" data-novo-atend data-cli="${esc(cid)}" data-tipo="Manutenção preventiva" data-eqs="${esc(l.map((x) => x.e.id).join(','))}">Registrar preventiva</button></div>
-      <div class="tabela-wrap"><table><tbody>${l.map(({ e, s }) => `<tr class="clicavel" data-ir="#/equipamento/${esc(e.id)}"><td>${esc(rotuloEquip(e))}</td><td class="esconde-cel suave">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td><td class="esconde-cel">última: ${dataBR(s.ultima) || 'nunca'}</td><td style="text-align:right">${tagSituacao(s)}</td></tr>`).join('')}</tbody></table></div></div>`).join('')
+    ${grupos.length ? grupos.map(({ cid, l }) => `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b><a href="#cliente-${esc(cid)}">${esc(nomeCliente(cid))}</a></b> <span class="suave peq">${l.length} equipamento${l.length > 1 ? 's' : ''}</span><span style="flex:1"></span><button class="btn peq" data-novo-atend data-cli="${esc(cid)}" data-tipo="Manutenção preventiva" data-eqs="${esc(l.map((x) => x.e.id).join(','))}">Registrar preventiva</button></div>
+      <div class="tabela-wrap"><table><tbody>${l.map(({ e, s }) => `<tr class="clicavel" data-ir="#equipamento-${esc(e.id)}"><td>${esc(rotuloEquip(e))}</td><td class="esconde-cel suave">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td><td class="esconde-cel">última: ${dataBR(s.ultima) || 'nunca'}</td><td style="text-align:right">${tagSituacao(s)}</td></tr>`).join('')}</tbody></table></div></div>`).join('')
     : `<div class="vazio">Nenhuma preventiva atrasada ou para os próximos ${C.diasAviso} dias.</div>`}
   </div>
   <div class="grade g2">
@@ -935,14 +1231,14 @@ function telaPainel() {
     </div>
     <div class="card"><h2>Garantias e antivírus</h2>
       ${garantias.length || avs.length ? `<table><tbody>
-        ${garantias.map(({ e, d }) => `<tr class="clicavel" data-ir="#/equipamento/${esc(e.id)}"><td>Garantia</td><td>${esc(rotuloEquip(e))}<div class="suave peq">${esc(nomeCliente(e.clienteId))}</div></td><td><span class="tag aviso">vence ${dataBR(e.garantiaAte)}</span></td></tr>`).join('')}
-        ${avs.map(({ e, d }) => `<tr class="clicavel" data-ir="#/equipamento/${esc(e.id)}"><td>Antivírus</td><td>${esc(rotuloEquip(e))}<div class="suave peq">${esc(nomeCliente(e.clienteId))}</div></td><td><span class="tag ${d < 0 ? 'atraso' : 'aviso'}">${d < 0 ? 'venceu' : 'vence'} ${dataBR(e.antivirusValidade)}</span></td></tr>`).join('')}
+        ${garantias.map(({ e, d }) => `<tr class="clicavel" data-ir="#equipamento-${esc(e.id)}"><td>Garantia</td><td>${esc(rotuloEquip(e))}<div class="suave peq">${esc(nomeCliente(e.clienteId))}</div></td><td><span class="tag aviso">vence ${dataBR(e.garantiaAte)}</span></td></tr>`).join('')}
+        ${avs.map(({ e, d }) => `<tr class="clicavel" data-ir="#equipamento-${esc(e.id)}"><td>Antivírus</td><td>${esc(rotuloEquip(e))}<div class="suave peq">${esc(nomeCliente(e.clienteId))}</div></td><td><span class="tag ${d < 0 ? 'atraso' : 'aviso'}">${d < 0 ? 'venceu' : 'vence'} ${dataBR(e.antivirusValidade)}</span></td></tr>`).join('')}
       </tbody></table>` : '<div class="vazio">Nenhuma garantia ou antivírus vencendo nos próximos 30 dias.</div>'}
     </div>
   </div>`);
   ligarComuns();
   const bn = $('#b-notif');
-  if (!('Notification' in window) || Notification.permission === 'granted') bn.remove();
+  if (!ONLINE || !('Notification' in window) || Notification.permission === 'granted') bn.remove();
   else bn.onclick = async () => { await Notification.requestPermission(); avisarNavegador(true); render(); };
 }
 function tagStatus(s) { return `<span class="tag ${s === 'Concluído' ? 'ok' : s === 'Agendado' ? 'azul' : 'aviso'}">${esc(s || '')}</span>`; }
@@ -981,7 +1277,7 @@ function telaClientes() {
   <div class="filtros"><input type="search" id="q" placeholder="Buscar por nome, CNPJ, cidade, contato..." value="${esc(F.q)}">
     <select id="sit"><option value="">Todos</option><option${F.sit === 'Ativo' ? ' selected' : ''}>Ativo</option><option${F.sit === 'Inativo' ? ' selected' : ''}>Inativo</option></select></div>
   <div class="card" style="padding:0">${lista.length ? `<div class="tabela-wrap"><table><thead><tr><th>Cliente</th><th class="esconde-cel">Contato</th><th class="esconde-cel">Cidade</th><th>Equip.</th><th>Próxima visita</th></tr></thead><tbody>
-  ${lista.map((c) => `<tr class="clicavel" data-ir="#/cliente/${esc(c.id)}"><td><b>${esc(c.nome)}</b>${c.situacao === 'Inativo' ? ' <span class="tag">inativo</span>' : ''}${c.fantasia ? `<div class="suave peq">${esc(c.fantasia)}</div>` : ''}</td>
+  ${lista.map((c) => `<tr class="clicavel" data-ir="#cliente-${esc(c.id)}"><td><b>${esc(c.nome)}</b>${c.situacao === 'Inativo' ? ' <span class="tag">inativo</span>' : ''}${c.fantasia ? `<div class="suave peq">${esc(c.fantasia)}</div>` : ''}</td>
     <td class="esconde-cel">${esc(c.responsavel || '')}<div class="suave peq">${esc(c.whatsapp || c.telefone || '')}</div></td><td class="esconde-cel">${esc(c.cidade || '')}</td><td>${nEq[c.id] || 0}</td><td>${tagSituacao(proximaVisita(c), 'sem periodicidade')}</td></tr>`).join('')}
   </tbody></table></div>` : `<div class="vazio">${Object.keys(DB.clientes).length ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado ainda. Clique em "+ Novo cliente" para começar.'}</div>`}</div>`);
   ligarComuns();
@@ -998,26 +1294,26 @@ function formCliente(c) {
     salvar: async (form) => {
       const d = { ...c, ...lerSecoes(form, SECOES_CLIENTE) };
       const nome = norm(d.nome);
-      if (Object.values(DB.clientes).some((x) => x.id !== d.id && norm(x.nome) === nome) && !confirmar('Já existe um cliente com esse nome. Salvar mesmo assim?')) return false;
+      if (Object.values(DB.clientes).some((x) => x.id !== d.id && norm(x.nome) === nome) && !await confirmar('Já existe um cliente com esse nome. Salvar mesmo assim?')) return false;
       const s = await salvar('clientes', d);
       toast('Cliente salvo');
-      if (novo) location.hash = '#/cliente/' + s.id; else render();
+      if (novo) location.hash = '#cliente-' + s.id; else render();
     },
   });
   const b = $('#b-apagar-cli');
   if (b) b.onclick = async () => {
     const eqs = Object.values(DB.equipamentos).filter((e) => e.clienteId === c.id);
     const ats = Object.values(DB.manutencoes).filter((m) => m.clienteId === c.id);
-    if (!confirmar(`Apagar o cliente "${c.nome}"?` + (eqs.length || ats.length ? `\n\nTambém serão apagados ${eqs.length} equipamento(s) e ${ats.length} atendimento(s) dele.` : ''))) return;
+    if (!await confirmar(`Apagar o cliente "${c.nome}"?` + (eqs.length || ats.length ? `\n\nTambém serão apagados ${eqs.length} equipamento(s) e ${ats.length} atendimento(s) dele.` : ''))) return;
     try {
       await salvarVarios([{ c: 'clientes', id: c.id, apagar: 1 }, ...eqs.map((e) => ({ c: 'equipamentos', id: e.id, apagar: 1 })), ...ats.map((m) => ({ c: 'manutencoes', id: m.id, apagar: 1 }))]);
-      $$('.fundo-modal').forEach((x) => x.remove()); toast('Cliente apagado'); location.hash = '#/clientes';
+      $$('.fundo-modal').forEach((x) => x.remove()); toast('Cliente apagado'); location.hash = '#clientes';
     } catch (e) { toast(e.message, 1); }
   };
 }
 async function telaCliente(id) {
   const c = DB.clientes[id];
-  if (!c) { location.hash = '#/clientes'; return; }
+  if (!c) { location.hash = '#clientes'; return; }
   const eqs = Object.values(DB.equipamentos).filter((e) => e.clienteId === id).sort((a, b) => (a.tipo || '').localeCompare(b.tipo || '') || rotuloEquip(a).localeCompare(rotuloEquip(b), 'pt-BR'));
   const ats = atendimentosDe((m) => m.clienteId === id);
   const pv = proximaVisita(c);
@@ -1025,7 +1321,7 @@ async function telaCliente(id) {
   const aba = telaCliente.aba || 'equip';
   const porTipo = {};
   for (const e of eqs) (porTipo[e.tipo] = porTipo[e.tipo] || []).push(e);
-  casca(topo(esc(c.nome), `<button class="btn" onclick="window.print()">Imprimir inventário</button><button class="btn" id="b-edit">Editar</button><button class="btn" id="b-eq">+ Equipamento</button><button class="btn pri" data-novo-atend data-cli="${esc(id)}">+ Atendimento</button>`,
+  casca(topo(esc(c.nome), `<button class="btn" onclick="imprimir()">Imprimir inventário</button><button class="btn" id="b-edit">Editar</button><button class="btn" id="b-eq">+ Equipamento</button><button class="btn pri" data-novo-atend data-cli="${esc(id)}">+ Atendimento</button>`,
     [c.fantasia, c.documento].filter(Boolean).map(esc).join(' · ')) + `
   <div class="so-impressao"><h2>${esc(cfg().empresa)} — Inventário de equipamentos · ${dataBR(hoje())}</h2></div>
   <div class="grade g2">
@@ -1070,7 +1366,7 @@ async function telaCliente(id) {
 function tabelaEquip(lista, { cliente = true } = {}) {
   if (!lista.length) return '<div class="vazio">Nenhum equipamento encontrado.</div>';
   return `<div class="tabela-wrap"><table><thead><tr><th>Equipamento</th><th>Marca / modelo</th><th>Nº de série</th>${cliente ? '<th>Cliente</th>' : ''}<th class="esconde-cel">Setor / local</th><th class="esconde-cel">IP</th><th>Próxima preventiva</th></tr></thead><tbody>
-  ${lista.map((e) => `<tr class="clicavel" data-ir="#/equipamento/${esc(e.id)}"><td><b>${esc(e.nome || nomeTipo(e.tipo))}</b>${e.status && e.status !== 'Ativo' ? ` <span class="tag ${e.status === 'Desativado' ? '' : 'aviso'}">${esc(e.status)}</span>` : ''}<div class="suave peq">${esc(nomeTipo(e.tipo))}${e.codigo ? ' · ' + esc(e.codigo) : ''}${e.responsavel ? ' · ' + esc(e.responsavel) : ''}</div></td>
+  ${lista.map((e) => `<tr class="clicavel" data-ir="#equipamento-${esc(e.id)}"><td><b>${esc(e.nome || nomeTipo(e.tipo))}</b>${e.status && e.status !== 'Ativo' ? ` <span class="tag ${e.status === 'Desativado' ? '' : 'aviso'}">${esc(e.status)}</span>` : ''}<div class="suave peq">${esc(nomeTipo(e.tipo))}${e.codigo ? ' · ' + esc(e.codigo) : ''}${e.responsavel ? ' · ' + esc(e.responsavel) : ''}</div></td>
     <td>${esc([e.marca, e.modelo].filter(Boolean).join(' '))}${grupoDe(e) === 'computador' && (e.processador || e.memoriaTotal) ? `<div class="suave peq">${esc([e.processador, e.memoriaTotal ? e.memoriaTotal + ' GB RAM' : '', e.so].filter(Boolean).join(' · '))}</div>` : ''}</td>
     <td class="mono peq">${esc(e.numeroSerie || '')}</td>${cliente ? `<td>${esc(nomeCliente(e.clienteId))}</td>` : ''}
     <td class="esconde-cel">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td><td class="esconde-cel mono peq">${esc(e.ip || '')}</td><td>${tagSituacao(proximaPreventiva(e), 'sem periodicidade')}</td></tr>`).join('')}
@@ -1106,7 +1402,7 @@ function telaEquipamentos() {
   </div>
   <div class="card" style="padding:0">${Object.keys(DB.equipamentos).length ? tabelaEquip(lista) : `<div class="vazio">Nenhum equipamento cadastrado ainda.${Object.keys(DB.clientes).length ? '' : ' Cadastre primeiro um cliente.'}</div>`}</div>`);
   ligarComuns();
-  $('#b-novo').onclick = () => (Object.keys(DB.clientes).length ? formEquipamento(null, { clienteId: F.cliente }) : (toast('Cadastre um cliente primeiro', 1), (location.hash = '#/clientes')));
+  $('#b-novo').onclick = () => (Object.keys(DB.clientes).length ? formEquipamento(null, { clienteId: F.cliente }) : (toast('Cadastre um cliente primeiro', 1), (location.hash = '#clientes')));
   $('#b-csv').onclick = () => exportarCsv(lista);
   $('#q').oninput = (e) => { F.q = e.target.value; const p = e.target.selectionStart; telaEquipamentos(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
   for (const [idEl, k] of [['f-cliente', 'cliente'], ['f-tipo', 'tipo'], ['f-setor', 'setor'], ['f-status', 'status'], ['f-prev', 'prev']]) $('#' + idEl).onchange = (e) => { F[k] = e.target.value; if (k === 'cliente') F.setor = ''; telaEquipamentos(); };
@@ -1132,7 +1428,7 @@ function exportarCsv(lista) {
   const csv = '﻿' + linhas.map((l) => l.map((v) => `"${String(v).replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `inventario-${hoje()}.csv`; a.click();
+  a.download = `inventario-${hoje()}.csv`; if (!baixar()) return; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 function formEquipamento(e, pre = {}) {
@@ -1146,11 +1442,11 @@ function formEquipamento(e, pre = {}) {
       d = { ...d, ...lido };
       if (d.numeroSerie) {
         const dup = Object.values(DB.equipamentos).find((x) => x.id !== d.id && norm(x.numeroSerie) === norm(d.numeroSerie));
-        if (dup && !confirmar(`Já existe um equipamento com esse número de série:\n${rotuloEquip(dup)} — ${nomeCliente(dup.clienteId)}\n\nSalvar mesmo assim?`)) return false;
+        if (dup && !await confirmar(`Já existe um equipamento com esse número de série:\n${rotuloEquip(dup)} — ${nomeCliente(dup.clienteId)}\n\nSalvar mesmo assim?`)) return false;
       }
       const s = await salvar('equipamentos', d);
       toast('Equipamento salvo');
-      if (novo && pre.voltar !== false) location.hash = '#/equipamento/' + s.id; else render();
+      if (novo && pre.voltar !== false) location.hash = '#equipamento-' + s.id; else render();
     },
   });
   const desenhar = () => {
@@ -1161,18 +1457,18 @@ function formEquipamento(e, pre = {}) {
   desenhar();
   const b = $('#b-apagar-eq');
   if (b) b.onclick = async () => {
-    if (!confirmar(`Apagar "${rotuloEquip(e)}"?\n\nSe ele só saiu de uso, prefira mudar a situação para "Desativado" e manter o histórico.`)) return;
-    try { await apagar('equipamentos', e.id); m.fechar(); toast('Equipamento apagado'); location.hash = '#/cliente/' + e.clienteId; } catch (er) { toast(er.message, 1); }
+    if (!await confirmar(`Apagar "${rotuloEquip(e)}"?\n\nSe ele só saiu de uso, prefira mudar a situação para "Desativado" e manter o histórico.`)) return;
+    try { await apagar('equipamentos', e.id); m.fechar(); toast('Equipamento apagado'); location.hash = '#cliente-' + e.clienteId; } catch (er) { toast(er.message, 1); }
   };
 }
 async function telaEquipamento(id) {
   const e = DB.equipamentos[id];
-  if (!e) { location.hash = '#/equipamentos'; return; }
+  if (!e) { location.hash = '#equipamentos'; return; }
   const ats = atendimentosDe((m) => (m.equipamentos || []).includes(id));
   const pp = proximaPreventiva(e);
   const c = DB.clientes[e.clienteId];
-  casca(topo(esc(e.nome || nomeTipo(e.tipo)), `<button class="btn" onclick="window.print()">Imprimir ficha</button><button class="btn" id="b-dup">Duplicar</button><button class="btn" id="b-edit">Editar</button><button class="btn pri" data-novo-atend data-cli="${esc(e.clienteId)}" data-eqs="${esc(id)}" data-tipo="Manutenção preventiva">+ Registrar manutenção</button>`,
-    `${esc(nomeTipo(e.tipo))}${e.codigo ? ' · ' + esc(e.codigo) : ''} · <a href="#/cliente/${esc(e.clienteId)}">${esc(c ? c.nome : '?')}</a>`) + `
+  casca(topo(esc(e.nome || nomeTipo(e.tipo)), `<button class="btn" onclick="imprimir()">Imprimir ficha</button><button class="btn" id="b-dup">Duplicar</button><button class="btn" id="b-edit">Editar</button><button class="btn pri" data-novo-atend data-cli="${esc(e.clienteId)}" data-eqs="${esc(id)}" data-tipo="Manutenção preventiva">+ Registrar manutenção</button>`,
+    `${esc(nomeTipo(e.tipo))}${e.codigo ? ' · ' + esc(e.codigo) : ''} · <a href="#cliente-${esc(e.clienteId)}">${esc(c ? c.nome : '?')}</a>`) + `
   <div class="so-impressao"><h2>${esc(cfg().empresa)} — Ficha do equipamento · ${dataBR(hoje())}</h2></div>
   <div class="grade g4">
     <div class="card"><div class="suave peq">Situação</div><div style="font-size:16px;font-weight:600">${esc(e.status || 'Ativo')}</div></div>
@@ -1326,7 +1622,7 @@ function formAtendimento(m, pre = {}) {
   desenhar();
   const b = $('#b-apagar-at');
   if (b) b.onclick = async () => {
-    if (!confirmar('Apagar este atendimento do histórico?')) return;
+    if (!await confirmar('Apagar este atendimento do histórico?')) return;
     try { await apagar('manutencoes', m.id); m2.fechar(); toast('Atendimento apagado'); render(); } catch (e) { toast(e.message, 1); }
   };
 }
@@ -1338,7 +1634,7 @@ function verAtendimento(id) {
   const v = modal({
     titulo: `${m.tipo} — ${dataBR(m.data)}`,
     corpo: `<dl class="dl">
-      <div class="l2"><dt>Cliente</dt><dd><a href="#/cliente/${esc(m.clienteId)}">${esc(nomeCliente(m.clienteId))}</a></dd></div>
+      <div class="l2"><dt>Cliente</dt><dd><a href="#cliente-${esc(m.clienteId)}">${esc(nomeCliente(m.clienteId))}</a></dd></div>
       <div><dt>Situação</dt><dd>${tagStatus(m.status)}</dd></div>
       <div><dt>Horário</dt><dd>${esc([m.horaInicio, m.horaFim].filter(Boolean).join(' – ') || '—')}</dd></div>
       <div><dt>Técnico</dt><dd>${esc(m.tecnico || '—')}</dd></div>
@@ -1349,7 +1645,7 @@ function verAtendimento(id) {
       ${m.descricao ? `<div class="l4"><dt>O que foi feito</dt><dd>${esc(m.descricao).replace(/\n/g, '<br>')}</dd></div>` : ''}
       ${m.pendencias ? `<div class="l4"><dt>Pendências</dt><dd>${esc(m.pendencias).replace(/\n/g, '<br>')}</dd></div>` : ''}
     </dl>
-    ${eqs.length ? `<h3 style="margin-top:16px">Equipamentos (${eqs.length})</h3><table class="sub-tabela"><tbody>${eqs.map((e) => `<tr><td><a href="#/equipamento/${esc(e.id)}">${esc(rotuloEquip(e))}</a></td><td class="suave">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td><td>${m.contadores?.[e.id] != null ? 'contador: ' + Number(m.contadores[e.id]).toLocaleString('pt-BR') : ''}${(m.preventivaEquip || []).includes(e.id) ? ' <span class="tag ok">preventiva</span>' : ''}</td></tr>`).join('')}</tbody></table>` : ''}
+    ${eqs.length ? `<h3 style="margin-top:16px">Equipamentos (${eqs.length})</h3><table class="sub-tabela"><tbody>${eqs.map((e) => `<tr><td><a href="#equipamento-${esc(e.id)}">${esc(rotuloEquip(e))}</a></td><td class="suave">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td><td>${m.contadores?.[e.id] != null ? 'contador: ' + Number(m.contadores[e.id]).toLocaleString('pt-BR') : ''}${(m.preventivaEquip || []).includes(e.id) ? ' <span class="tag ok">preventiva</span>' : ''}</td></tr>`).join('')}</tbody></table>` : ''}
     ${(m.checklist || []).length ? `<h3 style="margin-top:16px">Checklist</h3><div class="checks">${m.checklist.map((t) => `<div>✓ ${esc(t)}</div>`).join('')}</div>` : ''}
     ${(m.pecas || []).length ? `<h3 style="margin-top:16px">Peças e serviços</h3><table class="sub-tabela"><thead><tr><th>Peça / serviço</th><th>Qtd</th><th>Valor</th><th>Equipamento</th></tr></thead><tbody>${m.pecas.map((p) => `<tr><td>${esc(p.peca)}</td><td>${esc(p.qtd || '')}</td><td>${moeda(p.valor)}</td><td>${esc(DB.equipamentos[p.equipamento]?.nome || '')}</td></tr>`).join('')}${totalPecas ? `<tr><td colspan="2"><b>Total</b></td><td><b>${moeda(totalPecas)}</b></td><td></td></tr>` : ''}</tbody></table>` : ''}
     <p class="suave peq" style="margin-top:14px">Registrado por ${esc(m.criadoPor || '?')} em ${new Date(m.criadoEm || Date.now()).toLocaleString('pt-BR')}</p>`,
@@ -1357,6 +1653,7 @@ function verAtendimento(id) {
   });
   $('#b-edit-at').onclick = () => { v.fechar(); formAtendimento(m); };
   $('#b-imp-at').onclick = () => {
+    if (!ONLINE) return toast('Na demonstração a impressão fica desligada. No sistema instalado, abre o relatório pronto para imprimir e assinar.');
     const w = window.open('', '_blank');
     if (!w) return toast('Permita pop-ups para imprimir', 1);
     w.document.write(`<!doctype html><meta charset="utf-8"><title>Atendimento ${dataBR(m.data)}</title><style>body{font:13px system-ui,Arial;margin:24px;color:#111}h1{font-size:18px}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:5px;text-align:left}.dl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.dl .l4{grid-column:1/-1}.dl .l2{grid-column:span 2}dt{font-size:11px;color:#666;text-transform:uppercase}dd{margin:0}.tag{font-weight:600}a{color:#111;text-decoration:none}h3{font-size:12px;text-transform:uppercase;color:#555}.checks{columns:2}.assin{margin-top:60px;display:flex;gap:40px}.assin div{flex:1;border-top:1px solid #000;text-align:center;padding-top:4px}</style>
@@ -1367,7 +1664,7 @@ function verAtendimento(id) {
 
 // ----- Senhas -----
 async function telaSenhas() {
-  if (!podeSenhas()) { location.hash = '#/painel'; return; }
+  if (!podeSenhas()) { location.hash = '#painel'; return; }
   const F = FILTRO.senha;
   const aba = telaSenhas.aba || 'lista';
   casca(topo('Senhas', '<button class="btn pri" id="b-nova">+ Nova senha</button>', 'Roteadores, Wi-Fi, DVRs, sistemas e acessos dos clientes') + `
@@ -1405,7 +1702,7 @@ async function telaSenhas() {
 
 // ----- Usuários -----
 async function telaUsuarios() {
-  if (!ehAdmin()) { location.hash = '#/painel'; return; }
+  if (!ehAdmin()) { location.hash = '#painel'; return; }
   casca(topo('Usuários do sistema', '<button class="btn pri" id="b-novo">+ Novo usuário</button>', 'Quem pode entrar no sistema') + '<div class="card" style="padding:0" id="lista-u"><div class="vazio">Carregando...</div></div>' +
     '<div class="info-caixa"><b>Administrador</b>: acesso a tudo, inclusive usuários e configurações. <b>Técnico</b>: cadastra clientes, equipamentos e atendimentos. A permissão <b>"Pode ver senhas"</b> libera o cofre de senhas para o técnico.</div>');
   const us = await api('GET', '/api/usuarios');
@@ -1452,7 +1749,7 @@ function telaConta() {
 
 // ----- Configurações -----
 function telaConfig() {
-  if (!ehAdmin()) { location.hash = '#/painel'; return; }
+  if (!ehAdmin()) { location.hash = '#painel'; return; }
   const C = cfg();
   const g = { computador: 'Computadores / notebooks / servidores', impressora: 'Impressoras', rede: 'Roteadores / rede', dvr: 'DVR / câmeras', nobreak: 'Nobreaks' };
   casca(topo('Configurações') + `<form id="f-cfg">
@@ -1481,7 +1778,7 @@ function telaConfig() {
   $('#b-exp').onclick = () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify({ exportadoEm: new Date().toISOString(), clientes: DB.clientes, equipamentos: DB.equipamentos, manutencoes: DB.manutencoes, config: DB.config }, null, 1)], { type: 'application/json' }));
-    a.download = `rminfo-dados-${hoje()}.json`; a.click();
+    a.download = `rminfo-dados-${hoje()}.json`; if (!baixar()) return; a.click();
   };
   $('#b-csv-all').onclick = () => exportarCsv(Object.values(DB.equipamentos).sort((a, b) => nomeCliente(a.clienteId).localeCompare(nomeCliente(b.clienteId), 'pt-BR')));
 }
@@ -1492,7 +1789,7 @@ async function iniciar() {
   VERSAO = 0; for (const k of Object.keys(DB)) DB[k] = {};
   CREDS = null;
   await carregar();
-  if (!location.hash) location.hash = '#/painel';
+  if (!location.hash) location.hash = '#painel';
   render();
   avisarNavegador();
 }

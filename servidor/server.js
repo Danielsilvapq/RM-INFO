@@ -384,7 +384,9 @@ const servidor = http.createServer(async (req, res) => {
       return fs.createReadStream(arquivo).pipe(res);
     }
     res.writeHead(200, { 'Content-Type': TIPOS['.html'], 'Cache-Control': 'no-cache' });
-    res.end(fs.readFileSync(path.join(RAIZ, 'index.html')));
+    // index.html é o mesmo da demonstração; aqui ele recebe a marca que liga o modo online
+    const html = fs.readFileSync(path.join(RAIZ, 'index.html'), 'utf8');
+    res.end(html.replace('<script>', '<script>window.RM_ONLINE=1;</script>\n<script>'));
   } catch (e) {
     console.error(e);
     res.writeHead(500); res.end('Erro interno');

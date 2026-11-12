@@ -17,6 +17,17 @@ Sistema para inventariar os equipamentos dos clientes, controlar as visitas peri
 - **Usuários**: administrador e técnico. O técnico só vê o cofre de senhas se o administrador liberar.
 - **Planilha**: exporta o inventário (com todos os campos) para Excel.
 
+## Demonstração
+
+Abra o `index.html` direto no navegador (dois cliques) e o sistema entra no **modo demonstração**: dados fictícios de 4 clientes, 25 equipamentos, atendimentos e senhas, tudo salvo só naquele navegador. Na tela de entrada aparecem os acessos de exemplo:
+
+- **Administrador**: usuário `admin`, senha `rm2026`
+- **Técnico**: usuário `tecnico`, senha `1234` (não vê o cofre de senhas)
+
+No menu lateral, "Restaurar dados de exemplo" volta tudo ao estado inicial. Na demonstração, a impressão e os downloads ficam desligados.
+
+Quando o mesmo `index.html` é aberto pelo servidor (`servidor/`), ele entra no modo de verdade, com login real e dados no banco.
+
 ## Como a periodicidade é calculada
 
 - **Preventiva do equipamento**: usa o prazo do próprio equipamento. Se ele não tiver, usa o do cliente e, por último, o padrão do tipo (em Configurações: computadores 180 dias, impressoras 90, etc.). A contagem começa na última preventiva registrada.
