@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RM Informática</title>
+<link rel="icon" href="assets/icone.svg" type="image/svg+xml">
+<style>
+:root{
+  --azul:#1d4ed8;--azul-esc:#1e3a8a;--azul-claro:#e8efff;--fundo:#f3f5f9;--card:#fff;--borda:#dfe3ea;--texto:#1b2230;--suave:#667085;
+  --verde:#15803d;--verde-cl:#e6f6ec;--amarelo:#a16207;--amarelo-cl:#fdf5d8;--vermelho:#b42318;--vermelho-cl:#fdeceb;--cinza-cl:#eef0f4;
+  --raio:10px;--sombra:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--texto);background:var(--fundo)}
+a{color:var(--azul);text-decoration:none}
+a:hover{text-decoration:underline}
+button,input,select,textarea{font:inherit;color:inherit}
+h1{font-size:20px;margin:0}
+h2{font-size:16px;margin:0 0 10px}
+h3{font-size:13px;margin:0 0 8px;color:var(--suave);text-transform:uppercase;letter-spacing:.04em}
+.app{display:flex;min-height:100vh}
+.lado{width:220px;background:var(--azul-esc);color:#fff;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.marca{padding:18px 16px;font-weight:700;font-size:17px;display:flex;gap:10px;align-items:center;border-bottom:1px solid rgba(255,255,255,.12)}
+.marca .logo{width:34px;height:34px;border-radius:8px;background:#fff;color:var(--azul-esc);display:grid;place-items:center;font-weight:800;font-size:14px}
+.marca small{display:block;font-weight:400;font-size:11px;opacity:.7}
+.menu{padding:8px;flex:1;overflow:auto}
+.menu a{display:flex;justify-content:space-between;align-items:center;color:#dbe4ff;padding:9px 12px;border-radius:8px;margin:2px 0}
+.menu a:hover{background:rgba(255,255,255,.08);text-decoration:none}
+.menu a.ativo{background:#fff;color:var(--azul-esc);font-weight:600}
+.menu .bolha{background:#ef4444;color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;font-weight:700}
+.usuario-box{padding:12px 16px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;opacity:.9}
+.usuario-box a{color:#fff;opacity:.8}
+.principal{flex:1;min-width:0;padding:20px 24px 60px}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.acoes{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--borda);background:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--cinza-cl)}
+.btn.pri{background:var(--azul);border-color:var(--azul);color:#fff}
+.btn.pri:hover{background:#1e40af}
+.btn.perigo{color:var(--vermelho);border-color:#f3c2be}
+.btn.peq{padding:4px 9px;font-size:12px}
+.btn.link{border:0;background:none;color:var(--azul);padding:2px 4px}
+.card{background:var(--card);border:1px solid var(--borda);border-radius:var(--raio);box-shadow:var(--sombra);padding:16px;margin-bottom:16px}
+.grade{display:grid;gap:16px;margin-bottom:16px}
+.grade>.card{margin-bottom:0}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.num{font-size:28px;font-weight:700}
+.num-card{cursor:pointer}
+.num-card .rot{color:var(--suave);font-size:13px}
+.tabela-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--borda);vertical-align:top}
+th{font-size:12px;color:var(--suave);font-weight:600;background:#fafbfc;position:sticky;top:0}
+tbody tr.clicavel{cursor:pointer}
+tbody tr.clicavel:hover{background:#f7f9ff}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600;background:var(--cinza-cl);color:#344054;white-space:nowrap}
+.tag.ok{background:var(--verde-cl);color:var(--verde)}
+.tag.aviso{background:var(--amarelo-cl);color:var(--amarelo)}
+.tag.atraso{background:var(--vermelho-cl);color:var(--vermelho)}
+.tag.azul{background:var(--azul-claro);color:var(--azul)}
+.suave{color:var(--suave)}
+.peq{font-size:12px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filtros input,.filtros select{padding:7px 10px;border:1px solid var(--borda);border-radius:8px;background:#fff}
+.filtros input[type=search]{min-width:240px;flex:1}
+.vazio{padding:30px;text-align:center;color:var(--suave)}
+/* formulário */
+.form-sec{margin-bottom:18px}
+.form-sec>h3{border-bottom:1px solid var(--borda);padding-bottom:6px}
+.campos{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 12px}
+.campo{display:flex;flex-direction:column;gap:3px;min-width:0}
+.campo.l2{grid-column:span 2}
+.campo.l4{grid-column:1/-1}
+.campo label{font-size:12px;color:var(--suave);font-weight:600}
+.campo input,.campo select,.campo textarea{padding:7px 9px;border:1px solid var(--borda);border-radius:7px;background:#fff;width:100%}
+.campo textarea{min-height:64px;resize:vertical}
+.campo input:focus,.campo select:focus,.campo textarea:focus,.filtros input:focus{outline:2px solid #bfd0ff;border-color:var(--azul)}
+.lista-rep{border:1px dashed var(--borda);border-radius:8px;padding:8px}
+.rep-linha{display:grid;gap:6px;align-items:end;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--cinza-cl)}
+.rep-linha input,.rep-linha select{padding:6px 8px;border:1px solid var(--borda);border-radius:6px;width:100%;background:#fff}
+.rep-linha label{font-size:11px;color:var(--suave)}
+.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:4px 12px}
+.checks label{display:flex;gap:7px;align-items:flex-start;padding:3px 0;cursor:pointer}
+.checks input{margin-top:3px}
+/* visão de detalhes */
+.dl{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 16px}
+.dl div{min-width:0}
+.dl dt{font-size:11px;color:var(--suave);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.dl dd{margin:1px 0 0;word-break:break-word}
+.dl .l4{grid-column:1/-1}
+.dl .l2{grid-column:span 2}
+.sub-tabela{font-size:13px}
+.sub-tabela th{background:none}
+/* modal */
+.fundo-modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:30px 12px;overflow:auto;z-index:50}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:980px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.modal.estreito{max-width:520px}
+.modal-topo{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--borda);position:sticky;top:0;background:#fff;border-radius:12px 12px 0 0;z-index:2}
+.modal-corpo{padding:16px 18px}
+.modal-rodape{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--borda);position:sticky;bottom:0;background:#fff;border-radius:0 0 12px 12px}
+.fechar{border:0;background:none;font-size:22px;cursor:pointer;line-height:1;color:var(--suave)}
+.aviso-caixa{background:var(--amarelo-cl);border:1px solid #f0dfa0;color:#713f12;padding:10px 12px;border-radius:8px;margin-bottom:12px}
+.info-caixa{background:var(--azul-claro);border:1px solid #c7d6ff;color:#1e3a8a;padding:10px 12px;border-radius:8px;margin-bottom:12px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:8px;opacity:0;transition:.2s;pointer-events:none;z-index:99;max-width:90vw}
+#toast.ver{opacity:1}
+#toast.erro{background:var(--vermelho)}
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding:16px;background:linear-gradient(160deg,#1e3a8a,#1d4ed8)}
+.login form{background:#fff;padding:28px;border-radius:14px;width:100%;max-width:360px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.login .campo{margin-bottom:12px}
+.login .logo{width:52px;height:52px;border-radius:12px;background:var(--azul-esc);color:#fff;display:grid;place-items:center;font-weight:800;font-size:20px;margin:0 auto 10px}
+.abas{display:flex;gap:4px;border-bottom:1px solid var(--borda);margin-bottom:14px;flex-wrap:wrap}
+.abas button{border:0;background:none;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent;color:var(--suave);font-weight:600}
+.abas button.ativo{border-color:var(--azul);color:var(--azul)}
+.senha-val{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--cinza-cl);padding:1px 6px;border-radius:5px}
+.menu-btn{display:none}
+.so-impressao{display:none}
+@media (max-width:1000px){.g4{grid-template-columns:repeat(2,1fr)}.campos,.dl{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:760px){
+  .app{display:block}
+  .lado{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:.2s;z-index:40;height:100%}
+  .lado.aberto{transform:none;box-shadow:0 0 40px rgba(0,0,0,.4)}
+  .menu-btn{display:inline-flex}
+  .principal{padding:14px 16px 60px}
+  .g2{grid-template-columns:1fr}
+  .campos,.dl{grid-template-columns:1fr 1fr}
+  .campo.l2{grid-column:1/-1}
+  .filtros input[type=search]{min-width:0;width:100%}
+  .esconde-cel{display:none}
+  .fundo-modal{padding:0}
+  .modal{border-radius:0;min-height:100vh}
+}
+@media print{
+  .lado,.no-print,.topo .acoes,.menu-btn,.filtros{display:none!important}
+  .so-impressao{display:block}
+  body{background:#fff}
+  .principal{padding:0}
+  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
+  th{position:static}
+}
+</style>
+</head>
+<body>
+<div id="raiz"></div>
+<div id="toast"></div>
+<script>
+'use strict';
+// ====================================================================
+//  RM Informática — inventário, manutenções e senhas dos clientes
+// ====================================================================
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const p2 = (n) => String(n).padStart(2, '0');
+const isoData = (d) => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+const hoje = () => isoData(new Date());
+const somaDias = (iso, dias) => { const [a, m, d] = iso.split('-').map(Number); return isoData(new Date(a, m - 1, d + Number(dias))); };
+const difDias = (a, b) => { const f = (s) => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); }; return Math.round((f(a) - f(b)) / 864e5); };
+const dataBR = (iso) => (iso && /^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10).split('-').reverse().join('/') : '');
+const moeda = (v) => (v === '' || v == null || isNaN(v) ? '' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+function toast(msg, erro) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'ver' + (erro ? ' erro' : '');
+  clearTimeout(toast.t); toast.t = setTimeout(() => (t.className = ''), erro ? 5000 : 2500);
+}
+
+// ---------------- comunicação com o servidor ----------------
+async function api(metodo, url, corpo) {
+  const r = await fetch(url, {
+    method: metodo, credentials: 'same-origin',
+    headers: { 'X-RM': '1', ...(corpo ? { 'Content-Type': 'application/json' } : {}) },
+    body: corpo ? JSON.stringify(corpo) : undefined,
+  });
+  let dados = {};
+  try { dados = await r.json(); } catch {}
+  if (r.status === 401 && !url.endsWith('/login')) { EU = null; telaLogin(); throw new Error('Faça login novamente'); }
+  if (!r.ok) throw new Error(dados.erro || 'Erro ' + r.status);
+  return dados;
+}
+
+let EU = null;
+const DB = { clientes: {}, equipamentos: {}, manutencoes: {}, config: {} };
+let VERSAO = 0;
+const ehAdmin = () => EU && EU.perfil === 'admin';
+const podeSenhas = () => EU && (EU.perfil === 'admin' || EU.pode_senhas);
+
+async function carregar() {
+  const r = await api('GET', '/api/estado?desde=' + VERSAO);
+  let mudou = false;
+  for (const it of r.itens) {
+    if (!DB[it.c]) continue;
+    mudou = true;
+    if (it.apagado) delete DB[it.c][it.id]; else DB[it.c][it.id] = it.dados;
+  }
+  VERSAO = r.versao;
+  return mudou;
+}
+async function salvar(c, obj) {
+  obj.id = obj.id || uid();
+  if (!obj.criadoEm) { obj.criadoEm = new Date().toISOString(); obj.criadoPor = EU.nome; }
+  obj.atualizadoEm = new Date().toISOString(); obj.atualizadoPor = EU.nome;
+  await api('POST', '/api/sync', { ops: [{ c, id: obj.id, dados: obj }] });
+  DB[c][obj.id] = obj;
+  return obj;
+}
+async function salvarVarios(ops) {
+  if (!ops.length) return;
+  await api('POST', '/api/sync', { ops });
+  for (const o of ops) { if (o.apagar) delete DB[o.c][o.id]; else DB[o.c][o.id] = o.dados; }
+}
+async function apagar(c, id) {
+  await api('POST', '/api/sync', { ops: [{ c, id, apagar: 1 }] });
+  delete DB[c][id];
+}
+setInterval(async () => {
+  if (!EU || document.hidden || $('.fundo-modal')) return;
+  try { if (await carregar()) render(); } catch {}
+}, 20000);
+window.addEventListener('focus', async () => { if (EU && !$('.fundo-modal')) { try { if (await carregar()) render(); } catch {} } });
+
+// ---------------- configuração ----------------
+const CHECKLIST_PADRAO = {
+  computador: ['Limpeza interna (poeira, ventoinhas)', 'Troca de pasta térmica', 'Verificação de saúde do HD/SSD (SMART)', 'Atualizações do sistema operacional',
+    'Antivírus ativo e atualizado', 'Verificação do backup', 'Limpeza de arquivos temporários', 'Teste de rede/internet', 'Verificação de temperatura', 'Conferência do inventário (hardware/softwares)'],
+  impressora: ['Limpeza interna', 'Limpeza dos rolos de tração', 'Verificação do toner/tinta', 'Verificação do cilindro/unidade de imagem', 'Leitura do contador de páginas', 'Página de teste', 'Teste de digitalização'],
+  rede: ['Verificação do roteador / Wi-Fi', 'Atualização de firmware', 'Teste de velocidade da internet', 'Verificação do switch e cabeamento', 'Revisão de senhas e acessos'],
+  dvr: ['Imagem de todas as câmeras', 'Gravação funcionando (dias gravados)', 'Saúde do HD do DVR', 'Data e hora corretas', 'Acesso remoto / aplicativo funcionando', 'Limpeza das lentes'],
+  nobreak: ['Teste de autonomia do nobreak', 'Estado da bateria'],
+};
+const PERIODO_PADRAO = { computador: 180, impressora: 90, rede: 180, dvr: 90, nobreak: 180, outro: 0 };
+function cfg() {
+  const c = DB.config.geral || {};
+  return {
+    empresa: c.empresa || 'RM Informática',
+    diasAviso: Number(c.diasAviso) || 15,
+    periodo: { ...PERIODO_PADRAO, ...(c.periodo || {}) },
+    checklist: { ...CHECKLIST_PADRAO, ...(c.checklist || {}) },
+    tecnicos: c.tecnicos || '',
+  };
+}
+
+// ---------------- tipos de equipamento e campos ----------------
+const TIPOS = {
+  computador: { nome: 'Computador', grupo: 'computador' },
+  notebook: { nome: 'Notebook', grupo: 'computador' },
+  servidor: { nome: 'Servidor', grupo: 'computador' },
+  impressora: { nome: 'Impressora', grupo: 'impressora' },
+  rede: { nome: 'Roteador / Rede', grupo: 'rede' },
+  dvr: { nome: 'DVR / NVR / Câmeras', grupo: 'dvr' },
+  nobreak: { nome: 'Nobreak / Estabilizador', grupo: 'nobreak' },
+  outro: { nome: 'Outro equipamento', grupo: 'outro' },
+};
+const grupoDe = (e) => (TIPOS[e.tipo] || TIPOS.outro).grupo;
+const nomeTipo = (t) => (TIPOS[t] || TIPOS.outro).nome;
+
+// f(chave, rótulo, tipo, opções)  — tipo: text, number, date, select, textarea, list, checks
+const f = (k, l, t = 'text', o = {}) => ({ k, l, t, ...o });
+const SIMNAO = ['', 'Sim', 'Não'];
+const REDE_CAMPOS = (pref = '') => [
+  f('conexao', 'Conexão', 'select', { op: ['', 'Cabo (rede)', 'Wi-Fi', 'Cabo + Wi-Fi', 'USB', 'Compartilhada por um PC'] }),
+  f('ipTipo', 'Tipo de IP', 'select', { op: ['', 'Fixo (manual)', 'DHCP (automático)', 'Reserva no DHCP'] }),
+  f('ip', 'Endereço IP', 'text', { ph: '192.168.0.10', cls: 'mono' }),
+  f('mascara', 'Máscara', 'text', { ph: '255.255.255.0', cls: 'mono' }),
+  f('gateway', 'Gateway', 'text', { ph: '192.168.0.1', cls: 'mono' }),
+  f('dns', 'DNS', 'text', { ph: '8.8.8.8, 1.1.1.1', cls: 'mono' }),
+  f('mac', 'MAC (cabo)', 'text', { ph: 'AA:BB:CC:DD:EE:FF', cls: 'mono' }),
+  f('macWifi', 'MAC (Wi-Fi)', 'text', { cls: 'mono' }),
+  f('pontoRede', 'Ponto de rede / porta do switch', 'text'),
+];
+
+const SEC_IDENT = { t: 'Identificação', campos: [
+  f('tipo', 'Tipo de equipamento', 'select', { op: Object.entries(TIPOS).map(([k, v]) => [k, v.nome]), req: 1 }),
+  f('clienteId', 'Cliente', 'cliente', { req: 1, cls: 'l2' }),
+  f('codigo', 'Código interno', 'text', { ph: 'automático' }),
+  f('nome', 'Nome / identificação', 'text', { ph: 'Ex.: PC Recepção 01', cls: 'l2' }),
+  f('marca', 'Marca', 'text', { sug: 'marca' }),
+  f('modelo', 'Modelo', 'text', { sug: 'modelo' }),
+  f('numeroSerie', 'Número de série', 'text', { cls: 'mono' }),
+  f('patrimonio', 'Patrimônio / etiqueta', 'text'),
+  f('partNumber', 'Part number / código do produto', 'text'),
+  f('status', 'Situação', 'select', { op: ['Ativo', 'Em manutenção', 'Reserva / estoque', 'Emprestado', 'Desativado'] }),
+] };
+const SEC_LOCAL = { t: 'Localização', campos: [
+  f('unidade', 'Unidade / filial', 'text', { sug: 'unidade' }),
+  f('setor', 'Setor / departamento', 'text', { sug: 'setor' }),
+  f('local', 'Local / sala', 'text', { sug: 'local' }),
+  f('andar', 'Andar', 'text'),
+  f('responsavel', 'Usuário / responsável', 'text'),
+  f('ramal', 'Ramal / telefone', 'text'),
+  f('emailUsuario', 'E-mail do usuário', 'text'),
+] };
+const SEC_AQUIS = { t: 'Aquisição e garantia', campos: [
+  f('propriedade', 'Propriedade', 'select', { op: ['', 'Do cliente', 'Locado (RM Informática)', 'Locado (terceiro)', 'Comodato'] }),
+  f('dataAquisicao', 'Data de compra / instalação', 'date'),
+  f('fornecedor', 'Fornecedor / loja', 'text'),
+  f('notaFiscal', 'Nota fiscal', 'text'),
+  f('valor', 'Valor (R$)', 'number', { step: '0.01' }),
+  f('garantiaAte', 'Garantia até', 'date'),
+  f('contrato', 'Contrato de locação / nº', 'text'),
+  f('valorLocacao', 'Valor mensal da locação (R$)', 'number', { step: '0.01' }),
+] };
+const SEC_MANUT = { t: 'Manutenção preventiva', campos: [
+  f('periodicidade', 'Fazer preventiva a cada (dias)', 'number', { ph: 'padrão' }),
+  f('ultimaPreventivaAnterior', 'Última preventiva (antes do sistema)', 'date'),
+  f('obs', 'Observações gerais', 'textarea', { cls: 'l4' }),
+] };
+
+const SECOES_TIPO = {
+  computador: [
+    { t: 'Hardware', campos: [
+      f('formato', 'Formato', 'select', { op: ['', 'Desktop (gabinete)', 'Notebook', 'All-in-one', 'Mini PC', 'Servidor torre', 'Servidor rack', 'Workstation'] }),
+      f('processador', 'Processador', 'text', { ph: 'Ex.: Intel Core i5-10400 2.9GHz', cls: 'l2' }),
+      f('nucleos', 'Núcleos / threads', 'text', { ph: '6 / 12' }),
+      f('placaMae', 'Placa-mãe', 'text', { cls: 'l2' }),
+      f('bios', 'Versão da BIOS', 'text'),
+      f('chipset', 'Chipset', 'text'),
+      f('memoriaTotal', 'Memória RAM total (GB)', 'number'),
+      f('memoriaTipo', 'Tipo de memória', 'select', { op: ['', 'DDR2', 'DDR3', 'DDR3L', 'DDR4', 'DDR5', 'LPDDR4', 'LPDDR5'] }),
+      f('memoriaPentes', 'Pentes de memória', 'text', { ph: 'Ex.: 2x 8GB 3200MHz' }),
+      f('memoriaSlots', 'Slots (usados / total)', 'text', { ph: '2 / 4' }),
+      f('placaVideo', 'Placa de vídeo', 'text', { ph: 'Integrada / modelo', cls: 'l2' }),
+      f('fonte', 'Fonte', 'text', { ph: 'Ex.: 500W 80 Plus' }),
+      f('gabinete', 'Gabinete', 'text'),
+      f('placaRede', 'Placa de rede / Wi-Fi', 'text', { cls: 'l2' }),
+      f('bateria', 'Bateria (notebook)', 'text', { ph: 'Modelo / saúde %' }),
+      f('carregador', 'Carregador (notebook)', 'text'),
+      f('outrosHw', 'Outros componentes', 'text', { cls: 'l4', ph: 'Leitor de DVD, placas extras, etc.' }),
+    ] },
+    { t: 'Armazenamento (HDs e SSDs)', campos: [
+      f('discos', '', 'list', { cls: 'l4', sub: [
+        f('tipo', 'Tipo', 'select', { op: ['', 'SSD NVMe', 'SSD SATA', 'HD', 'SSD M.2 SATA', 'HD externo'] }),
+        f('capacidade', 'Capacidade', 'text', { ph: '480 GB' }),
+        f('marcaModelo', 'Marca / modelo', 'text'),
+        f('serie', 'Nº de série', 'text'),
+        f('saude', 'Saúde', 'text', { ph: '98% / OK' }),
+      ] }),
+    ] },
+    { t: 'Sistema operacional e softwares', campos: [
+      f('so', 'Sistema operacional', 'text', { sug: 'so', ph: 'Ex.: Windows 11 Pro' }),
+      f('soVersao', 'Versão / build', 'text', { ph: '23H2 (22631)' }),
+      f('soArquitetura', 'Arquitetura', 'select', { op: ['', '64 bits', '32 bits', 'ARM64'] }),
+      f('soLicenca', 'Tipo de licença', 'select', { op: ['', 'OEM (de fábrica)', 'Retail (caixa)', 'Volume / corporativa', 'Digital (conta Microsoft)', 'Sem licença', 'Software livre'] }),
+      f('soChave', 'Chave do produto', 'text', { cls: 'l2 mono' }),
+      f('soAtivado', 'Ativado', 'select', { op: SIMNAO }),
+      f('nomeMaquina', 'Nome do computador (hostname)', 'text', { cls: 'mono' }),
+      f('dominio', 'Domínio / grupo de trabalho', 'text'),
+      f('usuariosLocais', 'Usuários do Windows', 'text', { cls: 'l2' }),
+      f('office', 'Office / pacote', 'text', { ph: 'Ex.: Microsoft 365, Office 2019' }),
+      f('officeLicenca', 'Licença do Office', 'text'),
+      f('antivirus', 'Antivírus', 'text'),
+      f('antivirusValidade', 'Validade do antivírus', 'date'),
+      f('backup', 'Backup', 'text', { ph: 'Como / onde é feito', cls: 'l2' }),
+      f('softwares', 'Softwares instalados', 'textarea', { cls: 'l4', ph: 'Um por linha (sistema de gestão, PDF, navegadores, etc.)' }),
+    ] },
+    { t: 'Rede', campos: [
+      ...REDE_CAMPOS(),
+      f('acessoRemoto', 'Acesso remoto', 'select', { op: ['', 'AnyDesk', 'TeamViewer', 'RustDesk', 'Área de Trabalho Remota (RDP)', 'Chrome Remote Desktop', 'Outro'] }),
+      f('acessoRemotoId', 'ID do acesso remoto', 'text', { cls: 'mono' }),
+    ] },
+    { t: 'Periféricos', campos: [
+      f('monitores', 'Monitores', 'list', { cls: 'l4', sub: [
+        f('marcaModelo', 'Marca / modelo', 'text'), f('polegadas', 'Polegadas', 'text'), f('serie', 'Nº de série', 'text'), f('conexao', 'Conexão', 'text', { ph: 'HDMI / VGA / DP' }),
+      ] }),
+      f('teclado', 'Teclado / mouse', 'text', { cls: 'l2' }),
+      f('nobreakLigado', 'Ligado em nobreak/estabilizador', 'text'),
+      f('outrosPerif', 'Outros periféricos', 'text', { ph: 'Webcam, headset, leitor...' }),
+    ] },
+  ],
+  impressora: [
+    { t: 'Características', campos: [
+      f('categoria', 'Tecnologia', 'select', { op: ['', 'Laser', 'Jato de tinta', 'Tanque de tinta', 'Matricial', 'Térmica (etiquetas/cupom)', 'Plotter', 'Sublimática'] }),
+      f('funcao', 'Função', 'select', { op: ['', 'Só impressora', 'Multifuncional (imprime, copia e digitaliza)', 'Multifuncional com fax', 'Scanner'] }),
+      f('cor', 'Cor', 'select', { op: ['', 'Monocromática (preto)', 'Colorida'] }),
+      f('papel', 'Tamanho de papel', 'select', { op: ['', 'A4 / Carta', 'A3', 'Ofício', 'Bobina', 'Etiqueta'] }),
+      f('duplex', 'Frente e verso automático', 'select', { op: SIMNAO }),
+      f('adf', 'Alimentador automático (ADF)', 'select', { op: SIMNAO }),
+      f('digitalizacao', 'Digitalização para', 'text', { ph: 'Pasta de rede, e-mail, USB...' }),
+      f('velocidade', 'Velocidade (ppm)', 'number'),
+      f('bandejas', 'Bandejas', 'text'),
+      f('volumeMes', 'Volume mensal estimado (páginas)', 'number'),
+      f('usuariosImp', 'Setores / pessoas que usam', 'text', { cls: 'l2' }),
+    ] },
+    { t: 'Conexão e rede', campos: [
+      ...REDE_CAMPOS(),
+      f('nomeMaquina', 'Hostname', 'text', { cls: 'mono' }),
+      f('computadorHost', 'Ligada no computador (se USB)', 'equip'),
+      f('fila', 'Nome da fila / compartilhamento', 'text', { cls: 'mono' }),
+      f('driver', 'Driver utilizado', 'text', { cls: 'l2' }),
+      f('painelWeb', 'Painel web (endereço)', 'text', { ph: 'http://192.168.0.50' }),
+      f('firmware', 'Firmware', 'text'),
+    ] },
+    { t: 'Suprimentos e contador', campos: [
+      f('toner', 'Toner / cartucho / tinta (modelo)', 'text', { cls: 'l2' }),
+      f('rendimento', 'Rendimento (páginas)', 'number'),
+      f('cilindro', 'Cilindro / unidade de imagem', 'text'),
+      f('fusor', 'Fusor / kit de manutenção', 'text'),
+      f('fornecedorSup', 'Fornecedor dos suprimentos', 'text'),
+      f('contadorInicial', 'Contador na instalação', 'number'),
+      f('contadorAtual', 'Contador atual (páginas)', 'number'),
+      f('dataContador', 'Data da leitura do contador', 'date'),
+      f('franquia', 'Franquia de páginas (locação)', 'number'),
+      f('valorExcedente', 'Valor por página excedente (R$)', 'number', { step: '0.001' }),
+    ] },
+  ],
+  rede: [
+    { t: 'Equipamento de rede', campos: [
+      f('funcaoRede', 'Função', 'select', { op: ['', 'Roteador', 'Roteador Wi-Fi', 'Access point', 'Mesh', 'Repetidor', 'Switch', 'Switch gerenciável', 'Modem / ONU (provedor)', 'Firewall', 'Rádio / enlace'] }),
+      f('ip', 'IP (LAN)', 'text', { cls: 'mono', ph: '192.168.0.1' }),
+      f('mascara', 'Máscara', 'text', { cls: 'mono' }),
+      f('gateway', 'Gateway', 'text', { cls: 'mono' }),
+      f('mac', 'MAC', 'text', { cls: 'mono' }),
+      f('painelWeb', 'Endereço de acesso (painel)', 'text', { ph: 'http://192.168.0.1:8080', cls: 'l2' }),
+      f('firmware', 'Firmware', 'text'),
+      f('portas', 'Portas (qtd / velocidade)', 'text', { ph: '8x Gigabit' }),
+      f('poe', 'PoE', 'select', { op: SIMNAO }),
+      f('dhcp', 'DHCP (faixa)', 'text', { ph: '192.168.0.100 a .200', cls: 'l2' }),
+      f('dns', 'DNS', 'text', { cls: 'mono' }),
+      f('acessoNuvem', 'Gerência em nuvem / app', 'text', { ph: 'Omada, UniFi, Intelbras...' }),
+      f('vlans', 'VLANs / observações de rede', 'textarea', { cls: 'l4' }),
+    ] },
+    { t: 'Internet (WAN)', campos: [
+      f('provedor', 'Provedor', 'text', { sug: 'provedor' }),
+      f('plano', 'Plano / velocidade', 'text'),
+      f('tipoWan', 'Tipo de conexão', 'select', { op: ['', 'PPPoE', 'DHCP', 'IP fixo', 'Bridge'] }),
+      f('ipWan', 'IP público / WAN', 'text', { cls: 'mono' }),
+      f('circuito', 'Código do cliente / circuito', 'text'),
+      f('suporteProvedor', 'Telefone de suporte do provedor', 'text'),
+    ] },
+    { t: 'Redes Wi-Fi (SSID)', campos: [
+      f('ssids', '', 'list', { cls: 'l4', sub: [
+        f('ssid', 'Nome da rede (SSID)', 'text'),
+        f('banda', 'Banda', 'select', { op: ['', '2.4 GHz', '5 GHz', '2.4 + 5 GHz', '6 GHz'] }),
+        f('seguranca', 'Segurança', 'select', { op: ['', 'WPA2', 'WPA3', 'WPA2/WPA3', 'WPA', 'Aberta'] }),
+        f('uso', 'Uso', 'select', { op: ['', 'Principal', 'Visitantes', 'Funcionários', 'Equipamentos'] }),
+        f('oculta', 'Oculta', 'select', { op: SIMNAO }),
+      ] }),
+      f('_dicaSenha', 'As senhas das redes ficam guardadas em "Senhas" (criptografadas).', 'aviso'),
+    ] },
+  ],
+  dvr: [
+    { t: 'Gravador', campos: [
+      f('tipoDvr', 'Tipo', 'select', { op: ['', 'DVR', 'NVR', 'XVR / híbrido', 'Câmera Wi-Fi avulsa'] }),
+      f('canais', 'Canais', 'number'),
+      f('camerasQtd', 'Câmeras instaladas', 'number'),
+      f('tecnologia', 'Tecnologia', 'select', { op: ['', 'HDCVI', 'HD-TVI', 'AHD', 'Analógica', 'IP', 'Multi-HD'] }),
+      f('resolucao', 'Resolução de gravação', 'text', { ph: '1080p' }),
+      f('hd', 'HD de gravação', 'text', { ph: '2 TB WD Purple' }),
+      f('diasGravacao', 'Dias de gravação', 'number'),
+      f('firmware', 'Firmware', 'text'),
+    ] },
+    { t: 'Rede e acesso remoto', campos: [
+      f('ip', 'IP', 'text', { cls: 'mono' }),
+      f('mascara', 'Máscara', 'text', { cls: 'mono' }),
+      f('gateway', 'Gateway', 'text', { cls: 'mono' }),
+      f('mac', 'MAC', 'text', { cls: 'mono' }),
+      f('portaHttp', 'Porta HTTP', 'text'),
+      f('portaServico', 'Porta de serviço', 'text', { ph: '37777 / 8000' }),
+      f('portaRtsp', 'Porta RTSP', 'text'),
+      f('p2p', 'Nº de série P2P / ID nuvem', 'text', { cls: 'mono l2' }),
+      f('app', 'Aplicativo', 'text', { ph: 'Intelbras iSIC, Hik-Connect, gDMSS...' }),
+      f('ddns', 'DDNS', 'text'),
+      f('painelWeb', 'Endereço de acesso', 'text', { cls: 'l2' }),
+    ] },
+    { t: 'Câmeras', campos: [
+      f('cameras', '', 'list', { cls: 'l4', sub: [
+        f('canal', 'Canal', 'text'), f('localCam', 'Local', 'text'), f('modelo', 'Modelo', 'text'),
+        f('formato', 'Formato', 'select', { op: ['', 'Bullet', 'Dome', 'Speed dome', 'Fisheye', 'Wi-Fi'] }), f('situacao', 'Situação', 'select', { op: ['', 'OK', 'Com defeito', 'Desligada'] }),
+      ] }),
+    ] },
+  ],
+  nobreak: [
+    { t: 'Nobreak / estabilizador', campos: [
+      f('categoriaNb', 'Tipo', 'select', { op: ['', 'Nobreak interativo', 'Nobreak senoidal', 'Nobreak online', 'Estabilizador', 'Filtro de linha'] }),
+      f('potencia', 'Potência (VA)', 'text'),
+      f('tensao', 'Tensão', 'select', { op: ['', '110V', '220V', 'Bivolt'] }),
+      f('bateriaNb', 'Bateria (modelo / qtd)', 'text'),
+      f('trocaBateria', 'Última troca de bateria', 'date'),
+      f('autonomia', 'Autonomia (min)', 'number'),
+      f('ligados', 'Equipamentos ligados nele', 'text', { cls: 'l2' }),
+    ] },
+  ],
+  outro: [
+    { t: 'Detalhes', campos: [
+      f('categoriaOutro', 'Categoria', 'text', { ph: 'Monitor, telefone IP, projetor, leitor...', sug: 'categoriaOutro' }),
+      f('ip', 'IP', 'text', { cls: 'mono' }),
+      f('mac', 'MAC', 'text', { cls: 'mono' }),
+      f('especificacoes', 'Especificações', 'textarea', { cls: 'l4' }),
+    ] },
+  ],
+};
+function secoesEquip(tipo) {
+  const g = (TIPOS[tipo] || TIPOS.outro).grupo;
+  return [SEC_IDENT, SEC_LOCAL, ...(SECOES_TIPO[g] || []), SEC_AQUIS, SEC_MANUT];
+}
+
+const SECOES_CLIENTE = [
+  { t: 'Dados do cliente', campos: [
+    f('nome', 'Nome / razão social', 'text', { req: 1, cls: 'l2' }),
+    f('fantasia', 'Nome fantasia', 'text', { cls: 'l2' }),
+    f('pessoa', 'Tipo', 'select', { op: ['Empresa (CNPJ)', 'Pessoa física (CPF)'] }),
+    f('documento', 'CNPJ / CPF', 'text'),
+    f('ie', 'Inscrição estadual', 'text'),
+    f('segmento', 'Ramo de atividade', 'text', { sug: 'segmento' }),
+    f('situacao', 'Situação', 'select', { op: ['Ativo', 'Inativo'] }),
+  ] },
+  { t: 'Contato', campos: [
+    f('responsavel', 'Responsável', 'text'),
+    f('telefone', 'Telefone', 'text'),
+    f('whatsapp', 'WhatsApp', 'text'),
+    f('email', 'E-mail', 'text'),
+    f('contatoTi', 'Contato para TI (nome / telefone)', 'text', { cls: 'l2' }),
+    f('horario', 'Horário de atendimento', 'text', { ph: 'Seg a sex, 8h às 18h', cls: 'l2' }),
+  ] },
+  { t: 'Endereço', campos: [
+    f('cep', 'CEP', 'text'),
+    f('endereco', 'Endereço', 'text', { cls: 'l2' }),
+    f('numero', 'Número', 'text'),
+    f('complemento', 'Complemento', 'text'),
+    f('bairro', 'Bairro', 'text'),
+    f('cidade', 'Cidade', 'text', { sug: 'cidade' }),
+    f('uf', 'UF', 'text'),
+  ] },
+  { t: 'Contrato e visitas periódicas', campos: [
+    f('contrato', 'Tipo de contrato', 'select', { op: ['', 'Contrato mensal', 'Contrato com visitas periódicas', 'Avulso (chamado)', 'Locação de equipamentos'] }),
+    f('valorMensal', 'Valor mensal (R$)', 'number', { step: '0.01' }),
+    f('inicioContrato', 'Início do contrato', 'date'),
+    f('periodicidadeVisita', 'Visita a cada (dias)', 'number', { ph: 'Ex.: 30' }),
+    f('preventivaPadrao', 'Preventiva dos equipamentos a cada (dias)', 'number', { ph: 'padrão do tipo' }),
+    f('diaPreferido', 'Dia / horário preferido', 'text'),
+    f('obs', 'Observações', 'textarea', { cls: 'l4' }),
+  ] },
+];
+
+const TIPOS_ATEND = ['Visita periódica', 'Manutenção preventiva', 'Manutenção corretiva', 'Instalação / configuração', 'Atendimento remoto', 'Entrega / retirada de equipamento', 'Orçamento / visita técnica'];
+const CONTA_VISITA = ['Visita periódica', 'Manutenção preventiva'];
+const STATUS_ATEND = ['Concluído', 'Pendente', 'Aguardando peça', 'Agendado'];
+
+// ---------------- formulários genéricos ----------------
+function sugestoes(chave) {
+  const s = new Set();
+  for (const col of [DB.equipamentos, DB.clientes]) for (const o of Object.values(col)) if (o[chave]) s.add(String(o[chave]));
+  return [...s].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+function opcoesClientes(sel) {
+  const lista = Object.values(DB.clientes).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  return '<option value="">— escolha —</option>' + lista.map((c) => `<option value="${esc(c.id)}"${c.id === sel ? ' selected' : ''}>${esc(c.nome)}</option>`).join('');
+}
+function htmlInput(c, v, nome) {
+  const n = esc(nome || c.k), val = v ?? '';
+  const cls = (c.cls || '').includes('mono') ? ' class="mono"' : '';
+  if (c.t === 'select') {
+    return `<select name="${n}">${c.op.map((o) => { const [k, l] = Array.isArray(o) ? o : [o, o || '—']; return `<option value="${esc(k)}"${String(k) === String(val) ? ' selected' : ''}>${esc(l)}</option>`; }).join('')}</select>`;
+  }
+  if (c.t === 'textarea') return `<textarea name="${n}" placeholder="${esc(c.ph || '')}">${esc(val)}</textarea>`;
+  if (c.t === 'cliente') return `<select name="${n}"${c.req ? ' required' : ''}>${opcoesClientes(val)}</select>`;
+  const tipo = c.t === 'number' ? 'number' : c.t === 'date' ? 'date' : 'text';
+  const dl = c.sug ? ` list="dl-${esc(c.sug)}"` : '';
+  return `<input type="${tipo}" name="${n}" value="${esc(val)}"${cls}${dl}${c.step ? ` step="${c.step}"` : ''}${c.req ? ' required' : ''} placeholder="${esc(c.ph || '')}" autocomplete="off">`;
+}
+function htmlLista(c, linhas) {
+  const cols = `grid-template-columns:${c.sub.map(() => 'minmax(90px,1fr)').join(' ')} 34px`;
+  const linha = (d = {}) => `<div class="rep-linha" style="${cols}">${c.sub.map((s) => `<div><label>${esc(s.l)}</label>${htmlInput(s, d[s.k], 'sub:' + s.k)}</div>`).join('')}<button type="button" class="btn peq perigo" data-rem title="Remover">×</button></div>`;
+  return `<div class="lista-rep" data-lista="${esc(c.k)}" data-tpl="${esc(linha())}">${(linhas || []).map(linha).join('')}<button type="button" class="btn peq" data-add>+ adicionar</button></div>`;
+}
+function htmlSecoes(secoes, dados, extra = {}) {
+  const dls = new Set();
+  let h = '';
+  for (const s of secoes) {
+    h += `<div class="form-sec"><h3>${esc(s.t)}</h3><div class="campos">`;
+    for (const c of s.campos) {
+      if (c.sug) dls.add(c.sug);
+      const cls = c.cls ? c.cls.replace('mono', '').trim() : '';
+      if (c.t === 'aviso') { h += `<div class="campo l4 suave peq">${esc(c.l)}</div>`; continue; }
+      if (c.t === 'list') { h += `<div class="campo ${cls || 'l4'}">${c.l ? `<label>${esc(c.l)}</label>` : ''}${htmlLista(c, dados[c.k])}</div>`; continue; }
+      if (c.t === 'equip') {
+        const eqs = Object.values(DB.equipamentos).filter((e) => e.clienteId === (extra.clienteId || dados.clienteId) && TIPOS[e.tipo]?.grupo === 'computador');
+        h += `<div class="campo ${cls}"><label>${esc(c.l)}</label><select name="${c.k}"><option value="">—</option>${eqs.map((e) => `<option value="${esc(e.id)}"${e.id === dados[c.k] ? ' selected' : ''}>${esc(rotuloEquip(e))}</option>`).join('')}</select></div>`;
+        continue;
+      }
+      h += `<div class="campo ${cls}"><label>${esc(c.l)}${c.req ? ' *' : ''}</label>${htmlInput(c, dados[c.k])}</div>`;
+    }
+    h += '</div></div>';
+  }
+  for (const d of dls) h += `<datalist id="dl-${esc(d)}">${sugestoes(d).map((v) => `<option value="${esc(v)}">`).join('')}</datalist>`;
+  return h;
+}
+function ligarListas(el) {
+  el.addEventListener('click', (ev) => {
+    const add = ev.target.closest('[data-add]');
+    if (add) { const box = add.closest('[data-lista]'); add.insertAdjacentHTML('beforebegin', box.dataset.tpl); return; }
+    const rem = ev.target.closest('[data-rem]');
+    if (rem) rem.closest('.rep-linha').remove();
+  });
+}
+function lerSecoes(form, secoes) {
+  const o = {};
+  for (const s of secoes) for (const c of s.campos) {
+    if (c.t === 'aviso') continue;
+    if (c.t === 'list') {
+      const box = form.querySelector(`[data-lista="${c.k}"]`);
+      if (!box) continue;
+      o[c.k] = $$('.rep-linha', box).map((ln) => {
+        const d = {};
+        for (const s2 of c.sub) { const inp = ln.querySelector(`[name="sub:${s2.k}"]`); if (inp && inp.value.trim()) d[s2.k] = inp.value.trim(); }
+        return d;
+      }).filter((d) => Object.keys(d).length);
+      continue;
+    }
+    const inp = form.elements[c.k];
+    if (!inp) continue;
+    const v = inp.value.trim();
+    o[c.k] = c.t === 'number' && v !== '' ? Number(v) : v;
+  }
+  return o;
+}
+function htmlVisao(secoes, d) {
+  let h = '';
+  for (const s of secoes) {
+    let corpo = '';
+    for (const c of s.campos) {
+      if (['aviso'].includes(c.t) || c.k === 'tipo' || c.k === 'clienteId') continue;
+      const v = d[c.k];
+      if (c.t === 'list') {
+        if (!v || !v.length) continue;
+        corpo += `<div class="l4"><div class="tabela-wrap"><table class="sub-tabela"><thead><tr>${c.sub.map((x) => `<th>${esc(x.l)}</th>`).join('')}</tr></thead><tbody>${v.map((ln) => `<tr>${c.sub.map((x) => `<td>${esc(ln[x.k] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+        continue;
+      }
+      if (v === '' || v == null) continue;
+      let txt = esc(v);
+      if (c.t === 'date') txt = dataBR(v);
+      else if (c.t === 'select' && Array.isArray(c.op[0])) txt = esc((c.op.find((o) => o[0] === v) || [, v])[1]);
+      else if (c.t === 'equip') { const e = DB.equipamentos[v]; txt = e ? `<a href="#/equipamento/${esc(e.id)}">${esc(rotuloEquip(e))}</a>` : ''; }
+      else if (c.k.startsWith('valor') && c.t === 'number') txt = moeda(v);
+      else if (c.t === 'textarea') txt = esc(v).replace(/\n/g, '<br>');
+      else if (c.k === 'painelWeb' && /^https?:\/\//i.test(v)) txt = `<a href="${esc(v)}" target="_blank" rel="noopener">${esc(v)}</a>`;
+      if ((c.cls || '').includes('mono')) txt = `<span class="mono">${txt}</span>`;
+      const cls = c.t === 'textarea' ? 'l4' : (c.cls || '').includes('l2') ? 'l2' : '';
+      corpo += `<div class="${cls}"><dt>${esc(c.l)}</dt><dd>${txt}</dd></div>`;
+    }
+    if (corpo) h += `<div class="card"><h3>${esc(s.t)}</h3><dl class="dl">${corpo}</dl></div>`;
+  }
+  return h;
+}
+
+// ---------------- modal ----------------
+function modal({ titulo, corpo, salvar: aoSalvar, estreito, textoSalvar = 'Salvar', extraRodape = '' }) {
+  const fundo = document.createElement('div');
+  fundo.className = 'fundo-modal';
+  fundo.innerHTML = `<form class="modal${estreito ? ' estreito' : ''}" novalidate>
+    <div class="modal-topo"><h2 style="margin:0">${esc(titulo)}</h2><button type="button" class="fechar" data-fechar aria-label="Fechar">×</button></div>
+    <div class="modal-corpo">${corpo}</div>
+    <div class="modal-rodape">${extraRodape}<span style="flex:1"></span><button type="button" class="btn" data-fechar>Cancelar</button>${aoSalvar ? `<button class="btn pri">${esc(textoSalvar)}</button>` : ''}</div></form>`;
+  document.body.appendChild(fundo);
+  const form = $('form', fundo);
+  const fechar = () => { fundo.remove(); document.removeEventListener('keydown', tecla); };
+  const tecla = (e) => { if (e.key === 'Escape') fechar(); };
+  document.addEventListener('keydown', tecla);
+  $$('[data-fechar]', fundo).forEach((b) => (b.onclick = fechar));
+  ligarListas(form);
+  form.onsubmit = async (ev) => {
+    ev.preventDefault();
+    const falta = $$('[required]', form).find((i) => !i.value.trim());
+    if (falta) { falta.focus(); toast('Preencha os campos obrigatórios (*)', 1); return; }
+    const btn = $('.btn.pri', form); btn.disabled = true;
+    try { if ((await aoSalvar(form)) !== false) fechar(); }
+    catch (e) { toast(e.message, 1); }
+    finally { btn.disabled = false; }
+  };
+  setTimeout(() => { const i = $('input:not([type=hidden]),select,textarea', form); if (i && window.innerWidth > 760) i.focus(); }, 30);
+  return { form, fechar, fundo };
+}
+function confirmar(msg) { return window.confirm(msg); }
+
+// ---------------- regras de manutenção e visitas ----------------
+const rotuloEquip = (e) => [e.nome || nomeTipo(e.tipo), [e.marca, e.modelo].filter(Boolean).join(' ')].filter(Boolean).join(' — ') + (e.codigo ? ` (${e.codigo})` : '');
+const nomeCliente = (id) => (DB.clientes[id] ? DB.clientes[id].nome : '(cliente removido)');
+const equipAtivo = (e) => !['Desativado'].includes(e.status);
+const atendimentosDe = (filtro) => Object.values(DB.manutencoes).filter(filtro).sort((a, b) => (b.data || '').localeCompare(a.data || '') || (b.horaInicio || '').localeCompare(a.horaInicio || ''));
+
+function periodoEquip(e) {
+  if (Number(e.periodicidade) > 0) return Number(e.periodicidade);
+  const c = DB.clientes[e.clienteId];
+  if (c && Number(c.preventivaPadrao) > 0) return Number(c.preventivaPadrao);
+  return Number(cfg().periodo[grupoDe(e)]) || 0;
+}
+function ultimaPreventiva(e) {
+  let ult = e.ultimaPreventivaAnterior || '';
+  for (const m of Object.values(DB.manutencoes)) {
+    if (m.status === 'Agendado') continue;
+    if ((m.tipo === 'Manutenção preventiva' || (m.preventivaEquip || []).includes(e.id)) && (m.equipamentos || []).includes(e.id) && (m.data || '') > ult) ult = m.data;
+  }
+  return ult;
+}
+// situação: {data, dias (positivo = faltam, negativo = atrasado), estado: ok|aviso|atraso|sem}
+function situacao(data) {
+  if (!data) return { estado: 'sem' };
+  const dias = difDias(data, hoje());
+  return { data, dias, estado: dias < 0 ? 'atraso' : dias <= cfg().diasAviso ? 'aviso' : 'ok' };
+}
+function proximaPreventiva(e) {
+  const per = periodoEquip(e);
+  if (!per || !equipAtivo(e)) return { estado: 'sem', ultima: ultimaPreventiva(e) };
+  const ult = ultimaPreventiva(e);
+  const base = ult || e.dataAquisicao || (e.criadoEm || '').slice(0, 10) || hoje();
+  return { ...situacao(somaDias(base, per)), ultima: ult, periodo: per };
+}
+function proximaVisita(c) {
+  const ats = atendimentosDe((m) => m.clienteId === c.id && m.status !== 'Agendado');
+  const ultVisita = ats.find((m) => CONTA_VISITA.includes(m.tipo));
+  const agendado = atendimentosDe((m) => m.clienteId === c.id && m.status === 'Agendado' && (m.data || '') >= hoje()).pop();
+  // a próxima visita marcada no último atendimento tem prioridade
+  const marcada = ats.find((m) => m.proximaVisita);
+  let data = '';
+  if (agendado) data = agendado.data;
+  else if (marcada && (!ultVisita || (marcada.data || '') >= (ultVisita.data || ''))) data = marcada.proximaVisita;
+  else if (Number(c.periodicidadeVisita) > 0) {
+    const base = (ultVisita && ultVisita.data) || c.inicioContrato || (c.criadoEm || '').slice(0, 10) || hoje();
+    data = somaDias(base, c.periodicidadeVisita);
+  }
+  if (c.situacao === 'Inativo') data = '';
+  return { ...situacao(data), ultima: ultVisita ? ultVisita.data : '', agendado: !!agendado };
+}
+function tagSituacao(s, semTexto = '—') {
+  if (!s || s.estado === 'sem') return `<span class="suave">${semTexto}</span>`;
+  const txt = s.dias < 0 ? `atrasada ${-s.dias} dia${s.dias === -1 ? '' : 's'}` : s.dias === 0 ? 'hoje' : `em ${s.dias} dia${s.dias === 1 ? '' : 's'}`;
+  return `<span class="tag ${s.estado}" title="${dataBR(s.data)}">${dataBR(s.data)} · ${txt}</span>`;
+}
+function pendencias() {
+  const visitas = Object.values(DB.clientes).map((c) => ({ c, s: proximaVisita(c) })).filter((x) => x.s.estado === 'atraso' || x.s.estado === 'aviso');
+  const prev = Object.values(DB.equipamentos).filter(equipAtivo).map((e) => ({ e, s: proximaPreventiva(e) })).filter((x) => x.s.estado === 'atraso' || x.s.estado === 'aviso');
+  return { visitas, prev, atrasos: visitas.filter((x) => x.s.estado === 'atraso').length + prev.filter((x) => x.s.estado === 'atraso').length };
+}
+function proximoCodigo() {
+  let max = 0;
+  for (const e of Object.values(DB.equipamentos)) { const m = /^EQ-?(\d+)$/i.exec(e.codigo || ''); if (m) max = Math.max(max, Number(m[1])); }
+  return 'EQ-' + String(max + 1).padStart(4, '0');
+}
+
+// ---------------- senhas (cofre) ----------------
+let CREDS = null;
+const TIPOS_CRED = { wifi: 'Wi-Fi (SSID)', equipamento: 'Acesso a equipamento (roteador, DVR, impressora...)', sistema: 'Sistema / software', email: 'E-mail', servidor: 'Servidor / Windows', provedor: 'Provedor de internet', outro: 'Outro' };
+const TIPOS_CRED_CURTO = { wifi: 'Wi-Fi', equipamento: 'Equipamento', sistema: 'Sistema', email: 'E-mail', servidor: 'Servidor', provedor: 'Provedor', outro: 'Outro' };
+async function carregarCreds(forcar) {
+  if (!podeSenhas()) return [];
+  if (!CREDS || forcar) CREDS = await api('GET', '/api/credenciais');
+  return CREDS;
+}
+function gerarSenha(n = 14) {
+  const cs = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%&*!?';
+  const a = crypto.getRandomValues(new Uint32Array(n));
+  return [...a].map((x) => cs[x % cs.length]).join('');
+}
+async function copiar(txt) {
+  try { await navigator.clipboard.writeText(txt); toast('Copiado'); }
+  catch { window.prompt('Copie:', txt); }
+}
+function tabelaCreds(lista, { mostrarCliente = true } = {}) {
+  if (!lista.length) return '<div class="vazio">Nenhuma senha cadastrada.</div>';
+  return `<div class="tabela-wrap"><table><thead><tr><th>Descrição</th><th>Tipo</th>${mostrarCliente ? '<th>Cliente</th>' : ''}<th>Equipamento</th><th>Usuário / SSID</th><th>Senha</th><th class="esconde-cel">Endereço</th><th></th></tr></thead><tbody>
+  ${lista.map((c) => {
+    const e = c.equipamento_id && DB.equipamentos[c.equipamento_id];
+    return `<tr><td><b>${esc(c.titulo)}</b>${c.obs ? `<div class="suave peq">${esc(c.obs)}</div>` : ''}</td>
+    <td><span class="tag">${esc(TIPOS_CRED_CURTO[c.tipo] || c.tipo)}</span></td>
+    ${mostrarCliente ? `<td>${c.cliente_id ? `<a href="#/cliente/${esc(c.cliente_id)}">${esc(nomeCliente(c.cliente_id))}</a>` : '<span class="suave">—</span>'}</td>` : ''}
+    <td>${e ? `<a href="#/equipamento/${esc(e.id)}">${esc(e.nome || rotuloEquip(e))}</a>` : '<span class="suave">—</span>'}</td>
+    <td class="mono">${esc(c.ssid || '')}${c.ssid && c.usuario ? '<br>' : ''}${esc(c.usuario || '')}${c.usuario ? ` <button class="btn link peq" data-copiar="${esc(c.usuario)}">copiar</button>` : ''}</td>
+    <td>${c.tem_senha ? `<span class="senha-val" data-senha-de="${c.id}">••••••••</span> <button class="btn link peq" data-ver="${c.id}">mostrar</button><button class="btn link peq" data-copiar-senha="${c.id}">copiar</button>` : '<span class="suave">sem senha</span>'}</td>
+    <td class="esconde-cel mono peq">${c.endereco ? (/^https?:\/\//i.test(c.endereco) ? `<a href="${esc(c.endereco)}" target="_blank" rel="noopener">${esc(c.endereco)}</a>` : esc(c.endereco)) : ''}</td>
+    <td style="white-space:nowrap"><button class="btn peq" data-edit-cred="${c.id}">Editar</button></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+function ligarCreds(el, aoMudar) {
+  el.addEventListener('click', async (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    try {
+      if (b.dataset.copiar !== undefined) return copiar(b.dataset.copiar);
+      if (b.dataset.ver) {
+        const span = el.querySelector(`[data-senha-de="${b.dataset.ver}"]`);
+        if (b.textContent === 'ocultar') { span.textContent = '••••••••'; b.textContent = 'mostrar'; return; }
+        const r = await api('POST', `/api/credenciais/${b.dataset.ver}/revelar`);
+        span.textContent = r.senha; b.textContent = 'ocultar';
+        setTimeout(() => { if (b.textContent === 'ocultar') { span.textContent = '••••••••'; b.textContent = 'mostrar'; } }, 30000);
+        return;
+      }
+      if (b.dataset.copiarSenha) { const r = await api('POST', `/api/credenciais/${b.dataset.copiarSenha}/revelar`); return copiar(r.senha); }
+      if (b.dataset.editCred) { const c = (CREDS || []).find((x) => String(x.id) === b.dataset.editCred); formCred(c, {}, aoMudar); }
+    } catch (e) { toast(e.message, 1); }
+  });
+}
+function formCred(c, pre = {}, aoMudar) {
+  const novo = !c;
+  c = c || { tipo: pre.tipo || 'equipamento', cliente_id: pre.cliente_id || '', equipamento_id: pre.equipamento_id || '' };
+  const eqOpts = (cid) => '<option value="">— nenhum —</option>' + Object.values(DB.equipamentos).filter((e) => e.clienteId === cid).sort((a, b) => rotuloEquip(a).localeCompare(rotuloEquip(b))).map((e) => `<option value="${esc(e.id)}"${e.id === c.equipamento_id ? ' selected' : ''}>${esc(rotuloEquip(e))}</option>`).join('');
+  const m = modal({
+    titulo: novo ? 'Nova senha' : 'Editar senha', estreito: true,
+    corpo: `<div class="campos" style="grid-template-columns:1fr 1fr">
+      <div class="campo l4"><label>Tipo</label><select name="tipo">${Object.entries(TIPOS_CRED).map(([k, v]) => `<option value="${k}"${k === c.tipo ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></div>
+      <div class="campo l4"><label>Descrição *</label><input name="titulo" value="${esc(c.titulo || '')}" placeholder="Ex.: Roteador recepção, Wi-Fi visitantes, DVR"></div>
+      <div class="campo l4"><label>Cliente</label><select name="cliente_id">${opcoesClientes(c.cliente_id)}</select></div>
+      <div class="campo l4"><label>Equipamento</label><select name="equipamento_id">${eqOpts(c.cliente_id)}</select></div>
+      <div class="campo l4" data-so="wifi"><label>Nome da rede (SSID)</label><input name="ssid" value="${esc(c.ssid || '')}" class="mono"></div>
+      <div class="campo l4"><label>Usuário / login</label><input name="usuario" value="${esc(c.usuario || '')}" class="mono" autocomplete="off"></div>
+      <div class="campo l4"><label>Senha ${novo ? '' : '<span class="suave">(deixe em branco para manter a atual)</span>'}</label>
+        <div style="display:flex;gap:6px"><input name="senha" type="text" class="mono" autocomplete="off" spellcheck="false" style="flex:1"><button type="button" class="btn peq" data-gerar>Gerar</button></div>
+        ${!novo && c.tem_senha ? '<label style="font-weight:400;display:flex;gap:6px;margin-top:4px"><input type="checkbox" name="apagarSenha" style="width:auto"> apagar a senha guardada</label>' : ''}</div>
+      <div class="campo l4"><label>Endereço / URL / IP de acesso</label><input name="endereco" value="${esc(c.endereco || '')}" class="mono" placeholder="http://192.168.0.1"></div>
+      <div class="campo l4"><label>Observações</label><textarea name="obs">${esc(c.obs || '')}</textarea></div>
+    </div><p class="suave peq">A senha é guardada criptografada no servidor. Toda visualização fica registrada.</p>`,
+    extraRodape: novo ? '' : '<button type="button" class="btn perigo" data-apagar-cred>Apagar</button>',
+    salvar: async (form) => {
+      const d = Object.fromEntries(['tipo', 'titulo', 'cliente_id', 'equipamento_id', 'ssid', 'usuario', 'endereco', 'obs'].map((k) => [k, form.elements[k].value]));
+      const s = form.elements.senha.value;
+      if (novo) d.senha = s;
+      else if (form.elements.apagarSenha && form.elements.apagarSenha.checked) d.senha = '';
+      else if (s) d.senha = s;
+      if (novo) await api('POST', '/api/credenciais', d); else await api('PUT', '/api/credenciais/' + c.id, d);
+      await carregarCreds(true); toast('Senha salva'); aoMudar && aoMudar();
+    },
+  });
+  const F = m.form;
+  const ajustaTipo = () => { $$('[data-so="wifi"]', F).forEach((x) => (x.style.display = F.elements.tipo.value === 'wifi' ? '' : 'none')); };
+  F.elements.tipo.onchange = ajustaTipo; ajustaTipo();
+  F.elements.cliente_id.onchange = () => { c.equipamento_id = ''; F.elements.equipamento_id.innerHTML = eqOpts(F.elements.cliente_id.value); };
+  $('[data-gerar]', F).onclick = () => { F.elements.senha.value = gerarSenha(); };
+  const ap = $('[data-apagar-cred]', F);
+  if (ap) ap.onclick = async () => {
+    if (!confirmar('Apagar esta senha? Não dá para desfazer.')) return;
+    try { await api('DELETE', '/api/credenciais/' + c.id); await carregarCreds(true); m.fechar(); toast('Senha apagada'); aoMudar && aoMudar(); } catch (e) { toast(e.message, 1); }
+  };
+}
+
+// ---------------- telas ----------------
+function telaLogin(msg) {
+  $('#raiz').innerHTML = `<div class="login"><form id="f-login">
+    <div class="logo">RM</div><h1 style="text-align:center">RM Informática</h1>
+    <p class="suave" style="text-align:center;margin:4px 0 20px">Inventário, manutenções e senhas dos clientes</p>
+    ${msg ? `<div class="aviso-caixa">${esc(msg)}</div>` : ''}
+    <div class="campo"><label>Usuário</label><input name="login" autocomplete="username" required autofocus></div>
+    <div class="campo"><label>Senha</label><input name="senha" type="password" autocomplete="current-password" required></div>
+    <button class="btn pri" style="width:100%;justify-content:center;padding:10px">Entrar</button></form></div>`;
+  $('#f-login').onsubmit = async (ev) => {
+    ev.preventDefault();
+    const F = ev.target;
+    try {
+      EU = await api('POST', '/api/login', { login: F.login.value, senha: F.senha.value });
+      await iniciar();
+    } catch (e) { telaLogin(e.message); }
+  };
+}
+
+const MENU = [
+  ['painel', 'Painel'], ['clientes', 'Clientes'], ['equipamentos', 'Equipamentos'], ['atendimentos', 'Atendimentos'],
+  ['senhas', 'Senhas', () => podeSenhas()], ['usuarios', 'Usuários', () => ehAdmin()], ['config', 'Configurações', () => ehAdmin()],
+];
+function casca(conteudo) {
+  const rota = (location.hash.slice(2) || 'painel').split('/')[0];
+  const ativo = { cliente: 'clientes', equipamento: 'equipamentos' }[rota] || rota;
+  const pend = pendencias().atrasos;
+  $('#raiz').innerHTML = `<div class="app">
+    <aside class="lado" id="lado"><div class="marca"><div class="logo">RM</div><div>${esc(cfg().empresa)}<small>Controle de inventário</small></div></div>
+      <nav class="menu">${MENU.filter((m) => !m[2] || m[2]()).map(([k, l]) => `<a href="#/${k}" class="${k === ativo ? 'ativo' : ''}">${l}${k === 'painel' && pend ? `<span class="bolha" title="Itens atrasados">${pend}</span>` : ''}</a>`).join('')}</nav>
+      <div class="usuario-box">${esc(EU.nome)} · ${EU.perfil === 'admin' ? 'administrador' : 'técnico'}<br><a href="#/conta">Minha senha</a> · <a href="#" id="sair">Sair</a></div></aside>
+    <main class="principal" id="principal">${conteudo}</main></div>`;
+  $('#sair').onclick = async (e) => { e.preventDefault(); try { await api('POST', '/api/logout'); } catch {} EU = null; CREDS = null; telaLogin(); };
+  $$('[data-menu]').forEach((b) => (b.onclick = () => $('#lado').classList.toggle('aberto')));
+  $('#principal').addEventListener('click', (e) => { if (!e.target.closest('[data-menu]')) $('#lado').classList.remove('aberto'); });
+}
+const btnMenu = '<button class="btn menu-btn" data-menu aria-label="Menu">☰</button>';
+const topo = (titulo, acoes = '', sub = '') => `<div class="topo"><div style="display:flex;gap:10px;align-items:center">${btnMenu}<div><h1>${titulo}</h1>${sub ? `<div class="suave">${sub}</div>` : ''}</div></div><div class="acoes">${acoes}</div></div>`;
+
+// estado dos filtros (lembrado durante a sessão)
+const FILTRO = { equip: { q: '', cliente: '', tipo: '', setor: '', status: '', prev: '' }, cli: { q: '', sit: '' }, atend: { q: '', cliente: '', tipo: '', de: '', ate: '' }, senha: { q: '', cliente: '', tipo: '' } };
+
+function render(irTopo) {
+  if (!EU) return telaLogin();
+  const [rota, id] = location.hash.slice(2).split('/');
+  const telas = { painel: telaPainel, clientes: telaClientes, cliente: telaCliente, equipamentos: telaEquipamentos, equipamento: telaEquipamento,
+    atendimentos: telaAtendimentos, senhas: telaSenhas, usuarios: telaUsuarios, config: telaConfig, conta: telaConta };
+  (telas[rota] || telaPainel)(id);
+  if (irTopo) window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', () => { $$('.fundo-modal').forEach((m) => m.remove()); render(true); });
+
+// ----- Painel -----
+function telaPainel() {
+  const { visitas, prev } = pendencias();
+  const C = cfg();
+  const eqAtivos = Object.values(DB.equipamentos).filter(equipAtivo);
+  const garantias = eqAtivos.filter((e) => e.garantiaAte).map((e) => ({ e, d: difDias(e.garantiaAte, hoje()) })).filter((x) => x.d >= 0 && x.d <= 30).sort((a, b) => a.d - b.d);
+  const avs = eqAtivos.filter((e) => e.antivirusValidade).map((e) => ({ e, d: difDias(e.antivirusValidade, hoje()) })).filter((x) => x.d <= 30).sort((a, b) => a.d - b.d);
+  const recentes = atendimentosDe((m) => m.status !== 'Agendado').slice(0, 8);
+  const agendados = atendimentosDe((m) => m.status === 'Agendado' && (m.data || '') >= hoje()).reverse().slice(0, 10);
+  const pendentes = atendimentosDe((m) => m.status === 'Pendente' || m.status === 'Aguardando peça');
+  visitas.sort((a, b) => a.s.dias - b.s.dias);
+  // preventivas agrupadas por cliente
+  const porCli = {};
+  for (const x of prev) (porCli[x.e.clienteId] = porCli[x.e.clienteId] || []).push(x);
+  const grupos = Object.entries(porCli).map(([cid, l]) => ({ cid, l: l.sort((a, b) => a.s.dias - b.s.dias) })).sort((a, b) => a.l[0].s.dias - b.l[0].s.dias);
+  const nAtrasoPrev = prev.filter((x) => x.s.estado === 'atraso').length;
+  const nAtrasoVis = visitas.filter((x) => x.s.estado === 'atraso').length;
+
+  casca(topo('Painel', `<button class="btn" id="b-notif">Ativar avisos</button><button class="btn pri" data-novo-atend>+ Registrar atendimento</button>`, `Hoje é ${new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}`) + `
+  <div class="grade g4">
+    <div class="card num-card" data-ir="#/clientes"><div class="rot">Clientes ativos</div><div class="num">${Object.values(DB.clientes).filter((c) => c.situacao !== 'Inativo').length}</div></div>
+    <div class="card num-card" data-ir="#/equipamentos"><div class="rot">Equipamentos ativos</div><div class="num">${eqAtivos.length}</div></div>
+    <div class="card num-card"><div class="rot">Visitas atrasadas</div><div class="num" style="color:${nAtrasoVis ? 'var(--vermelho)' : 'inherit'}">${nAtrasoVis}</div><div class="suave peq">${visitas.length - nAtrasoVis} nos próximos ${C.diasAviso} dias</div></div>
+    <div class="card num-card" data-ir="#/equipamentos" data-prev="vencer"><div class="rot">Preventivas atrasadas</div><div class="num" style="color:${nAtrasoPrev ? 'var(--vermelho)' : 'inherit'}">${nAtrasoPrev}</div><div class="suave peq">${prev.length - nAtrasoPrev} nos próximos ${C.diasAviso} dias</div></div>
+  </div>
+  <div class="grade g2">
+    <div class="card"><h2>Visitas periódicas a fazer</h2>
+      ${visitas.length ? `<div class="tabela-wrap"><table><thead><tr><th>Cliente</th><th>Última visita</th><th>Próxima</th><th></th></tr></thead><tbody>
+      ${visitas.map(({ c, s }) => `<tr><td><a href="#/cliente/${esc(c.id)}">${esc(c.nome)}</a>${c.telefone || c.whatsapp ? `<div class="suave peq">${esc(c.whatsapp || c.telefone)}</div>` : ''}</td><td>${dataBR(s.ultima) || '<span class="suave">nunca</span>'}</td><td>${tagSituacao(s)}${s.agendado ? ' <span class="tag azul">agendada</span>' : ''}</td><td><button class="btn peq" data-novo-atend data-cli="${esc(c.id)}" data-tipo="Visita periódica">Registrar</button></td></tr>`).join('')}
+      </tbody></table></div>` : `<div class="vazio">Nenhuma visita atrasada ou para os próximos ${C.diasAviso} dias.</div>`}
+    </div>
+    <div class="card"><h2>Agendados</h2>
+      ${agendados.length ? `<div class="tabela-wrap"><table><tbody>${agendados.map((m) => `<tr class="clicavel" data-atend="${esc(m.id)}"><td style="white-space:nowrap">${dataBR(m.data)} ${esc(m.horaInicio || '')}</td><td><b>${esc(nomeCliente(m.clienteId))}</b><div class="suave peq">${esc(m.tipo)}${m.tecnico ? ' · ' + esc(m.tecnico) : ''}</div></td></tr>`).join('')}</tbody></table></div>`
+      : '<div class="vazio">Nada agendado. Use "Registrar atendimento" com a situação "Agendado" para marcar uma visita.</div>'}
+      ${pendentes.length ? `<h3 style="margin-top:14px">Atendimentos em aberto</h3><table><tbody>${pendentes.map((m) => `<tr class="clicavel" data-atend="${esc(m.id)}"><td>${dataBR(m.data)}</td><td><b>${esc(nomeCliente(m.clienteId))}</b><div class="suave peq">${esc(m.problema || m.descricao || m.tipo)}</div></td><td><span class="tag aviso">${esc(m.status)}</span></td></tr>`).join('')}</tbody></table>` : ''}
+    </div>
+  </div>
+  <div class="card"><h2>Manutenções preventivas a fazer</h2>
+    ${grupos.length ? grupos.map(({ cid, l }) => `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b><a href="#/cliente/${esc(cid)}">${esc(nomeCliente(cid))}</a></b> <span class="suave peq">${l.length} equipamento${l.length > 1 ? 's' : ''}</span><span style="flex:1"></span><button class="btn peq" data-novo-atend data-cli="${esc(cid)}" data-tipo="Manutenção preventiva" data-eqs="${esc(l.map((x) => x.e.id).join(','))}">Registrar preventiva</button></div>
+      <div class="tabela-wrap"><table><tbody>${l.map(({ e, s }) => `<tr class="clicavel" data-ir="#/equipamento/${esc(e.id)}"><td>${esc(rotuloEquip(e))}</td><td class="esconde-cel suave">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td><td class="esconde-cel">última: ${dataBR(s.ultima) || 'nunca'}</td><td style="text-align:right">${tagSituacao(s)}</td></tr>`).join('')}</tbody></table></div></div>`).join('')
+    : `<div class="vazio">Nenhuma preventiva atrasada ou para os próximos ${C.diasAviso} dias.</div>`}
+  </div>
+  <div class="grade g2">
+    <div class="card"><h2>Últimos atendimentos</h2>
+      ${recentes.length ? `<table><tbody>${recentes.map((m) => `<tr class="clicavel" data-atend="${esc(m.id)}"><td style="white-space:nowrap">${dataBR(m.data)}</td><td><b>${esc(nomeCliente(m.clienteId))}</b><div class="suave peq">${esc(m.tipo)} · ${(m.equipamentos || []).length} equip.${m.tecnico ? ' · ' + esc(m.tecnico) : ''}</div></td><td>${tagStatus(m.status)}</td></tr>`).join('')}</tbody></table>` : '<div class="vazio">Nenhum atendimento registrado ainda.</div>'}
+    </div>
+    <div class="card"><h2>Garantias e antivírus</h2>
+      ${garantias.length || avs.length ? `<table><tbody>
+        ${garantias.map(({ e, d }) => `<tr class="clicavel" data-ir="#/equipamento/${esc(e.id)}"><td>Garantia</td><td>${esc(rotuloEquip(e))}<div class="suave peq">${esc(nomeCliente(e.clienteId))}</div></td><td><span class="tag aviso">vence ${dataBR(e.garantiaAte)}</span></td></tr>`).join('')}
+        ${avs.map(({ e, d }) => `<tr class="clicavel" data-ir="#/equipamento/${esc(e.id)}"><td>Antivírus</td><td>${esc(rotuloEquip(e))}<div class="suave peq">${esc(nomeCliente(e.clienteId))}</div></td><td><span class="tag ${d < 0 ? 'atraso' : 'aviso'}">${d < 0 ? 'venceu' : 'vence'} ${dataBR(e.antivirusValidade)}</span></td></tr>`).join('')}
+      </tbody></table>` : '<div class="vazio">Nenhuma garantia ou antivírus vencendo nos próximos 30 dias.</div>'}
+    </div>
+  </div>`);
+  ligarComuns();
+  const bn = $('#b-notif');
+  if (!('Notification' in window) || Notification.permission === 'granted') bn.remove();
+  else bn.onclick = async () => { await Notification.requestPermission(); avisarNavegador(true); render(); };
+}
+function tagStatus(s) { return `<span class="tag ${s === 'Concluído' ? 'ok' : s === 'Agendado' ? 'azul' : 'aviso'}">${esc(s || '')}</span>`; }
+function avisarNavegador(forcar) {
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const chave = 'rm-aviso-' + hoje();
+    if (!forcar && localStorage.getItem(chave)) return;
+    const { visitas, prev } = pendencias();
+    const atrV = visitas.filter((x) => x.s.estado === 'atraso').length, atrP = prev.filter((x) => x.s.estado === 'atraso').length;
+    if (!visitas.length && !prev.length) return;
+    new Notification('RM Informática — manutenções', { body: `${atrV} visita(s) e ${atrP} preventiva(s) atrasadas. ${visitas.length - atrV + prev.length - atrP} vencendo nos próximos dias.` });
+    localStorage.setItem(chave, '1');
+  } catch {}
+}
+function ligarComuns(el = $('#principal')) {
+  el.addEventListener('click', (ev) => {
+    const na = ev.target.closest('[data-novo-atend]');
+    if (na) { ev.stopPropagation(); return formAtendimento(null, { clienteId: na.dataset.cli, tipo: na.dataset.tipo, equipamentos: na.dataset.eqs ? na.dataset.eqs.split(',') : undefined }); }
+    const at = ev.target.closest('[data-atend]');
+    if (at && !ev.target.closest('a,button')) return verAtendimento(at.dataset.atend);
+    const ir = ev.target.closest('[data-ir]');
+    if (ir && !ev.target.closest('a,button')) { if (ir.dataset.prev) FILTRO.equip.prev = ir.dataset.prev; location.hash = ir.dataset.ir; }
+  });
+}
+
+// ----- Clientes -----
+function telaClientes() {
+  const F = FILTRO.cli;
+  const q = norm(F.q);
+  const lista = Object.values(DB.clientes).filter((c) => (!F.sit || (c.situacao || 'Ativo') === F.sit) && (!q || norm([c.nome, c.fantasia, c.documento, c.cidade, c.responsavel, c.telefone].join(' ')).includes(q)))
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+  const nEq = {};
+  for (const e of Object.values(DB.equipamentos)) if (equipAtivo(e)) nEq[e.clienteId] = (nEq[e.clienteId] || 0) + 1;
+  casca(topo('Clientes', '<button class="btn pri" id="b-novo">+ Novo cliente</button>', `${lista.length} cliente(s)`) + `
+  <div class="filtros"><input type="search" id="q" placeholder="Buscar por nome, CNPJ, cidade, contato..." value="${esc(F.q)}">
+    <select id="sit"><option value="">Todos</option><option${F.sit === 'Ativo' ? ' selected' : ''}>Ativo</option><option${F.sit === 'Inativo' ? ' selected' : ''}>Inativo</option></select></div>
+  <div class="card" style="padding:0">${lista.length ? `<div class="tabela-wrap"><table><thead><tr><th>Cliente</th><th class="esconde-cel">Contato</th><th class="esconde-cel">Cidade</th><th>Equip.</th><th>Próxima visita</th></tr></thead><tbody>
+  ${lista.map((c) => `<tr class="clicavel" data-ir="#/cliente/${esc(c.id)}"><td><b>${esc(c.nome)}</b>${c.situacao === 'Inativo' ? ' <span class="tag">inativo</span>' : ''}${c.fantasia ? `<div class="suave peq">${esc(c.fantasia)}</div>` : ''}</td>
+    <td class="esconde-cel">${esc(c.responsavel || '')}<div class="suave peq">${esc(c.whatsapp || c.telefone || '')}</div></td><td class="esconde-cel">${esc(c.cidade || '')}</td><td>${nEq[c.id] || 0}</td><td>${tagSituacao(proximaVisita(c), 'sem periodicidade')}</td></tr>`).join('')}
+  </tbody></table></div>` : `<div class="vazio">${Object.keys(DB.clientes).length ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado ainda. Clique em "+ Novo cliente" para começar.'}</div>`}</div>`);
+  ligarComuns();
+  $('#b-novo').onclick = () => formCliente();
+  $('#q').oninput = (e) => { F.q = e.target.value; const p = e.target.selectionStart; telaClientes(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
+  $('#sit').onchange = (e) => { F.sit = e.target.value; telaClientes(); };
+}
+function formCliente(c) {
+  const novo = !c;
+  c = c ? { ...c } : { situacao: 'Ativo', pessoa: 'Empresa (CNPJ)' };
+  modal({
+    titulo: novo ? 'Novo cliente' : 'Editar cliente', corpo: htmlSecoes(SECOES_CLIENTE, c),
+    extraRodape: novo ? '' : '<button type="button" class="btn perigo" id="b-apagar-cli">Apagar cliente</button>',
+    salvar: async (form) => {
+      const d = { ...c, ...lerSecoes(form, SECOES_CLIENTE) };
+      const nome = norm(d.nome);
+      if (Object.values(DB.clientes).some((x) => x.id !== d.id && norm(x.nome) === nome) && !confirmar('Já existe um cliente com esse nome. Salvar mesmo assim?')) return false;
+      const s = await salvar('clientes', d);
+      toast('Cliente salvo');
+      if (novo) location.hash = '#/cliente/' + s.id; else render();
+    },
+  });
+  const b = $('#b-apagar-cli');
+  if (b) b.onclick = async () => {
+    const eqs = Object.values(DB.equipamentos).filter((e) => e.clienteId === c.id);
+    const ats = Object.values(DB.manutencoes).filter((m) => m.clienteId === c.id);
+    if (!confirmar(`Apagar o cliente "${c.nome}"?` + (eqs.length || ats.length ? `\n\nTambém serão apagados ${eqs.length} equipamento(s) e ${ats.length} atendimento(s) dele.` : ''))) return;
+    try {
+      await salvarVarios([{ c: 'clientes', id: c.id, apagar: 1 }, ...eqs.map((e) => ({ c: 'equipamentos', id: e.id, apagar: 1 })), ...ats.map((m) => ({ c: 'manutencoes', id: m.id, apagar: 1 }))]);
+      $$('.fundo-modal').forEach((x) => x.remove()); toast('Cliente apagado'); location.hash = '#/clientes';
+    } catch (e) { toast(e.message, 1); }
+  };
+}
+async function telaCliente(id) {
+  const c = DB.clientes[id];
+  if (!c) { location.hash = '#/clientes'; return; }
+  const eqs = Object.values(DB.equipamentos).filter((e) => e.clienteId === id).sort((a, b) => (a.tipo || '').localeCompare(b.tipo || '') || rotuloEquip(a).localeCompare(rotuloEquip(b), 'pt-BR'));
+  const ats = atendimentosDe((m) => m.clienteId === id);
+  const pv = proximaVisita(c);
+  const end = [[c.endereco, c.numero].filter(Boolean).join(', '), c.complemento, c.bairro, [c.cidade, c.uf].filter(Boolean).join(' - '), c.cep].filter(Boolean).join(' · ');
+  const aba = telaCliente.aba || 'equip';
+  const porTipo = {};
+  for (const e of eqs) (porTipo[e.tipo] = porTipo[e.tipo] || []).push(e);
+  casca(topo(esc(c.nome), `<button class="btn" onclick="window.print()">Imprimir inventário</button><button class="btn" id="b-edit">Editar</button><button class="btn" id="b-eq">+ Equipamento</button><button class="btn pri" data-novo-atend data-cli="${esc(id)}">+ Atendimento</button>`,
+    [c.fantasia, c.documento].filter(Boolean).map(esc).join(' · ')) + `
+  <div class="so-impressao"><h2>${esc(cfg().empresa)} — Inventário de equipamentos · ${dataBR(hoje())}</h2></div>
+  <div class="grade g2">
+    <div class="card"><h3>Contato</h3><dl class="dl" style="grid-template-columns:1fr 1fr">
+      ${[['Responsável', c.responsavel], ['Telefone', c.telefone], ['WhatsApp', c.whatsapp ? `<a href="https://wa.me/55${esc(String(c.whatsapp).replace(/\D/g, '').replace(/^55/, ''))}" target="_blank" rel="noopener">${esc(c.whatsapp)}</a>` : '', true], ['E-mail', c.email], ['Contato TI', c.contatoTi], ['Horário', c.horario]]
+        .filter((x) => x[1]).map(([l, v, raw]) => `<div><dt>${l}</dt><dd>${raw ? v : esc(v)}</dd></div>`).join('') || '<div class="suave">—</div>'}
+      ${end ? `<div class="l4"><dt>Endereço</dt><dd>${esc(end)}</dd></div>` : ''}</dl></div>
+    <div class="card"><h3>Contrato e visitas</h3><dl class="dl" style="grid-template-columns:1fr 1fr">
+      <div><dt>Contrato</dt><dd>${esc(c.contrato || '—')}</dd></div>
+      <div><dt>Valor mensal</dt><dd>${moeda(c.valorMensal) || '—'}</dd></div>
+      <div><dt>Visita a cada</dt><dd>${c.periodicidadeVisita ? c.periodicidadeVisita + ' dias' : '—'}</dd></div>
+      <div><dt>Preventiva a cada</dt><dd>${c.preventivaPadrao ? c.preventivaPadrao + ' dias' : 'padrão do tipo'}</dd></div>
+      <div><dt>Última visita</dt><dd>${dataBR(pv.ultima) || 'nunca'}</dd></div>
+      <div><dt>Próxima visita</dt><dd>${tagSituacao(pv, 'não definida')}</dd></div>
+      ${c.obs ? `<div class="l4"><dt>Observações</dt><dd>${esc(c.obs).replace(/\n/g, '<br>')}</dd></div>` : ''}</dl></div>
+  </div>
+  <div class="abas no-print">${[['equip', `Equipamentos (${eqs.length})`], ['atend', `Atendimentos (${ats.length})`], ...(podeSenhas() ? [['senhas', 'Senhas']] : [])].map(([k, l]) => `<button data-aba="${k}" class="${aba === k ? 'ativo' : ''}">${l}</button>`).join('')}</div>
+  <div id="conteudo-aba"></div>`);
+  ligarComuns();
+  $('#b-edit').onclick = () => formCliente(c);
+  $('#b-eq').onclick = () => formEquipamento(null, { clienteId: id });
+  $$('[data-aba]').forEach((b) => (b.onclick = () => { telaCliente.aba = b.dataset.aba; telaCliente(id); }));
+  const alvo = $('#conteudo-aba');
+  if (aba === 'equip' || window.matchMedia('print').matches) {
+    alvo.innerHTML = eqs.length ? Object.entries(porTipo).map(([t, l]) => `<div class="card" style="padding:0"><div style="padding:12px 14px 0"><h3>${esc(nomeTipo(t))} (${l.length})</h3></div>${tabelaEquip(l, { cliente: false })}</div>`).join('')
+      : '<div class="card vazio">Nenhum equipamento cadastrado para este cliente.</div>';
+  } else if (aba === 'atend') {
+    alvo.innerHTML = `<div class="card" style="padding:0">${tabelaAtend(ats, { cliente: false })}</div>`;
+  } else if (aba === 'senhas') {
+    alvo.innerHTML = '<div class="card vazio">Carregando...</div>';
+    const desenhar = async () => {
+      const l = (await carregarCreds()).filter((x) => x.cliente_id === id);
+      alvo.innerHTML = `<div class="card" style="padding:0"><div style="padding:12px 14px;display:flex;justify-content:flex-end"><button class="btn pri peq" id="b-nova-cred">+ Nova senha</button></div>${tabelaCreds(l, { mostrarCliente: false })}</div>`;
+      $('#b-nova-cred').onclick = () => formCred(null, { cliente_id: id }, desenhar);
+    };
+    ligarCreds(alvo, desenhar);
+    desenhar().catch((e) => toast(e.message, 1));
+  }
+}
+
+// ----- Equipamentos -----
+function tabelaEquip(lista, { cliente = true } = {}) {
+  if (!lista.length) return '<div class="vazio">Nenhum equipamento encontrado.</div>';
+  return `<div class="tabela-wrap"><table><thead><tr><th>Equipamento</th><th>Marca / modelo</th><th>Nº de série</th>${cliente ? '<th>Cliente</th>' : ''}<th class="esconde-cel">Setor / local</th><th class="esconde-cel">IP</th><th>Próxima preventiva</th></tr></thead><tbody>
+  ${lista.map((e) => `<tr class="clicavel" data-ir="#/equipamento/${esc(e.id)}"><td><b>${esc(e.nome || nomeTipo(e.tipo))}</b>${e.status && e.status !== 'Ativo' ? ` <span class="tag ${e.status === 'Desativado' ? '' : 'aviso'}">${esc(e.status)}</span>` : ''}<div class="suave peq">${esc(nomeTipo(e.tipo))}${e.codigo ? ' · ' + esc(e.codigo) : ''}${e.responsavel ? ' · ' + esc(e.responsavel) : ''}</div></td>
+    <td>${esc([e.marca, e.modelo].filter(Boolean).join(' '))}${grupoDe(e) === 'computador' && (e.processador || e.memoriaTotal) ? `<div class="suave peq">${esc([e.processador, e.memoriaTotal ? e.memoriaTotal + ' GB RAM' : '', e.so].filter(Boolean).join(' · '))}</div>` : ''}</td>
+    <td class="mono peq">${esc(e.numeroSerie || '')}</td>${cliente ? `<td>${esc(nomeCliente(e.clienteId))}</td>` : ''}
+    <td class="esconde-cel">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td><td class="esconde-cel mono peq">${esc(e.ip || '')}</td><td>${tagSituacao(proximaPreventiva(e), 'sem periodicidade')}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+function filtrarEquip() {
+  const F = FILTRO.equip, q = norm(F.q);
+  return Object.values(DB.equipamentos).filter((e) => {
+    if (F.cliente && e.clienteId !== F.cliente) return false;
+    if (F.tipo && e.tipo !== F.tipo) return false;
+    if (F.setor && e.setor !== F.setor) return false;
+    if (F.status ? (e.status || 'Ativo') !== F.status : e.status === 'Desativado') return false;
+    if (F.prev) { const s = proximaPreventiva(e).estado; if (F.prev === 'vencer' ? !(s === 'atraso' || s === 'aviso') : s !== F.prev) return false; }
+    if (q) {
+      const txt = norm(Object.values(e).map((v) => (typeof v === 'object' ? JSON.stringify(v) : v)).join(' ') + ' ' + nomeCliente(e.clienteId));
+      if (!q.split(/\s+/).every((p) => txt.includes(p))) return false;
+    }
+    return true;
+  }).sort((a, b) => nomeCliente(a.clienteId).localeCompare(nomeCliente(b.clienteId), 'pt-BR') || (a.tipo || '').localeCompare(b.tipo || '') || rotuloEquip(a).localeCompare(rotuloEquip(b), 'pt-BR'));
+}
+function telaEquipamentos() {
+  const F = FILTRO.equip;
+  const lista = filtrarEquip();
+  const setores = [...new Set(Object.values(DB.equipamentos).filter((e) => !F.cliente || e.clienteId === F.cliente).map((e) => e.setor).filter(Boolean))].sort();
+  casca(topo('Equipamentos', '<button class="btn" id="b-csv">Exportar planilha</button><button class="btn pri" id="b-novo">+ Novo equipamento</button>', `${lista.length} equipamento(s)`) + `
+  <div class="filtros">
+    <input type="search" id="q" placeholder="Buscar: série, modelo, IP, hostname, usuário, componente..." value="${esc(F.q)}">
+    <select id="f-cliente"><option value="">Todos os clientes</option>${Object.values(DB.clientes).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map((c) => `<option value="${esc(c.id)}"${c.id === F.cliente ? ' selected' : ''}>${esc(c.nome)}</option>`).join('')}</select>
+    <select id="f-tipo"><option value="">Todos os tipos</option>${Object.entries(TIPOS).map(([k, v]) => `<option value="${k}"${k === F.tipo ? ' selected' : ''}>${v.nome}</option>`).join('')}</select>
+    <select id="f-setor"><option value="">Todos os setores</option>${setores.map((s) => `<option${s === F.setor ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select>
+    <select id="f-status"><option value="">Situação: em uso</option>${SEC_IDENT.campos.find((c) => c.k === 'status').op.map((s) => `<option${s === F.status ? ' selected' : ''}>${s}</option>`).join('')}</select>
+    <select id="f-prev"><option value="">Preventiva: todas</option><option value="atraso"${F.prev === 'atraso' ? ' selected' : ''}>Atrasadas</option><option value="vencer"${F.prev === 'vencer' ? ' selected' : ''}>Atrasadas ou a vencer</option><option value="ok"${F.prev === 'ok' ? ' selected' : ''}>Em dia</option><option value="sem"${F.prev === 'sem' ? ' selected' : ''}>Sem periodicidade</option></select>
+  </div>
+  <div class="card" style="padding:0">${Object.keys(DB.equipamentos).length ? tabelaEquip(lista) : `<div class="vazio">Nenhum equipamento cadastrado ainda.${Object.keys(DB.clientes).length ? '' : ' Cadastre primeiro um cliente.'}</div>`}</div>`);
+  ligarComuns();
+  $('#b-novo').onclick = () => (Object.keys(DB.clientes).length ? formEquipamento(null, { clienteId: F.cliente }) : (toast('Cadastre um cliente primeiro', 1), (location.hash = '#/clientes')));
+  $('#b-csv').onclick = () => exportarCsv(lista);
+  $('#q').oninput = (e) => { F.q = e.target.value; const p = e.target.selectionStart; telaEquipamentos(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
+  for (const [idEl, k] of [['f-cliente', 'cliente'], ['f-tipo', 'tipo'], ['f-setor', 'setor'], ['f-status', 'status'], ['f-prev', 'prev']]) $('#' + idEl).onchange = (e) => { F[k] = e.target.value; if (k === 'cliente') F.setor = ''; telaEquipamentos(); };
+}
+function exportarCsv(lista) {
+  const cols = [['cliente', 'Cliente'], ['tipoNome', 'Tipo']];
+  const vistos = new Set(['cliente', 'tipoNome']);
+  for (const t of Object.keys(TIPOS)) for (const s of secoesEquip(t)) for (const c of s.campos) if (!['aviso', 'cliente'].includes(c.t) && c.k !== 'tipo' && !vistos.has(c.k)) { vistos.add(c.k); cols.push([c.k, c.l || s.t]); }
+  cols.push(['ultimaPrev', 'Última preventiva'], ['proxPrev', 'Próxima preventiva']);
+  const valor = (e, k) => {
+    if (k === 'cliente') return nomeCliente(e.clienteId);
+    if (k === 'tipoNome') return nomeTipo(e.tipo);
+    if (k === 'ultimaPrev') return dataBR(ultimaPreventiva(e));
+    if (k === 'proxPrev') return dataBR(proximaPreventiva(e).data);
+    if (k === 'computadorHost') return e[k] && DB.equipamentos[e[k]] ? rotuloEquip(DB.equipamentos[e[k]]) : '';
+    const v = e[k];
+    if (Array.isArray(v)) return v.map((x) => Object.values(x).join(' ')).join(' | ');
+    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return dataBR(v);
+    return v ?? '';
+  };
+  const usadas = cols.filter(([k]) => ['cliente', 'tipoNome', 'proxPrev'].includes(k) || lista.some((e) => valor(e, k) !== ''));
+  const linhas = [usadas.map((c) => c[1]), ...lista.map((e) => usadas.map(([k]) => valor(e, k)))];
+  const csv = '﻿' + linhas.map((l) => l.map((v) => `"${String(v).replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `inventario-${hoje()}.csv`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function formEquipamento(e, pre = {}) {
+  const novo = !e;
+  let d = e ? JSON.parse(JSON.stringify(e)) : { tipo: 'computador', status: 'Ativo', codigo: proximoCodigo(), ...pre };
+  const m = modal({
+    titulo: novo ? 'Novo equipamento' : 'Editar equipamento', corpo: '<div id="campos-eq"></div>',
+    extraRodape: novo ? '' : '<button type="button" class="btn perigo" id="b-apagar-eq">Apagar</button>',
+    salvar: async (form) => {
+      const lido = lerSecoes(form, secoesEquip(form.elements.tipo.value));
+      d = { ...d, ...lido };
+      if (d.numeroSerie) {
+        const dup = Object.values(DB.equipamentos).find((x) => x.id !== d.id && norm(x.numeroSerie) === norm(d.numeroSerie));
+        if (dup && !confirmar(`Já existe um equipamento com esse número de série:\n${rotuloEquip(dup)} — ${nomeCliente(dup.clienteId)}\n\nSalvar mesmo assim?`)) return false;
+      }
+      const s = await salvar('equipamentos', d);
+      toast('Equipamento salvo');
+      if (novo && pre.voltar !== false) location.hash = '#/equipamento/' + s.id; else render();
+    },
+  });
+  const desenhar = () => {
+    $('#campos-eq', m.form).innerHTML = htmlSecoes(secoesEquip(d.tipo), d);
+    m.form.elements.tipo.onchange = () => { d = { ...d, ...lerSecoes(m.form, secoesEquip(d.tipo)), tipo: m.form.elements.tipo.value }; desenhar(); };
+    m.form.elements.clienteId.onchange = () => { d = { ...d, ...lerSecoes(m.form, secoesEquip(d.tipo)) }; desenhar(); };
+  };
+  desenhar();
+  const b = $('#b-apagar-eq');
+  if (b) b.onclick = async () => {
+    if (!confirmar(`Apagar "${rotuloEquip(e)}"?\n\nSe ele só saiu de uso, prefira mudar a situação para "Desativado" e manter o histórico.`)) return;
+    try { await apagar('equipamentos', e.id); m.fechar(); toast('Equipamento apagado'); location.hash = '#/cliente/' + e.clienteId; } catch (er) { toast(er.message, 1); }
+  };
+}
+async function telaEquipamento(id) {
+  const e = DB.equipamentos[id];
+  if (!e) { location.hash = '#/equipamentos'; return; }
+  const ats = atendimentosDe((m) => (m.equipamentos || []).includes(id));
+  const pp = proximaPreventiva(e);
+  const c = DB.clientes[e.clienteId];
+  casca(topo(esc(e.nome || nomeTipo(e.tipo)), `<button class="btn" onclick="window.print()">Imprimir ficha</button><button class="btn" id="b-dup">Duplicar</button><button class="btn" id="b-edit">Editar</button><button class="btn pri" data-novo-atend data-cli="${esc(e.clienteId)}" data-eqs="${esc(id)}" data-tipo="Manutenção preventiva">+ Registrar manutenção</button>`,
+    `${esc(nomeTipo(e.tipo))}${e.codigo ? ' · ' + esc(e.codigo) : ''} · <a href="#/cliente/${esc(e.clienteId)}">${esc(c ? c.nome : '?')}</a>`) + `
+  <div class="so-impressao"><h2>${esc(cfg().empresa)} — Ficha do equipamento · ${dataBR(hoje())}</h2></div>
+  <div class="grade g4">
+    <div class="card"><div class="suave peq">Situação</div><div style="font-size:16px;font-weight:600">${esc(e.status || 'Ativo')}</div></div>
+    <div class="card"><div class="suave peq">Número de série</div><div class="mono" style="font-size:15px;font-weight:600">${esc(e.numeroSerie || '—')}</div></div>
+    <div class="card"><div class="suave peq">Última preventiva</div><div style="font-size:16px;font-weight:600">${dataBR(pp.ultima) || 'nunca'}</div></div>
+    <div class="card"><div class="suave peq">Próxima preventiva${pp.periodo ? ` (a cada ${pp.periodo} dias)` : ''}</div><div style="margin-top:3px">${tagSituacao(pp, 'sem periodicidade')}</div></div>
+  </div>
+  ${htmlVisao(secoesEquip(e.tipo), e)}
+  <div id="creds-eq"></div>
+  <div class="card" style="padding:0"><div style="padding:12px 14px 0"><h2>Histórico de atendimentos (${ats.length})</h2></div>${tabelaAtend(ats, { cliente: false })}</div>
+  <p class="suave peq">Cadastrado em ${dataBR((e.criadoEm || '').slice(0, 10))}${e.criadoPor ? ' por ' + esc(e.criadoPor) : ''} · última alteração ${dataBR((e.atualizadoEm || '').slice(0, 10))}${e.atualizadoPor ? ' por ' + esc(e.atualizadoPor) : ''}</p>`);
+  ligarComuns();
+  $('#b-edit').onclick = () => formEquipamento(e);
+  $('#b-dup').onclick = () => {
+    const copia = JSON.parse(JSON.stringify(e));
+    for (const k of ['id', 'criadoEm', 'criadoPor', 'atualizadoEm', 'atualizadoPor', 'numeroSerie', 'patrimonio', 'ip', 'mac', 'macWifi', 'nomeMaquina', 'acessoRemotoId', 'soChave', 'ultimaPreventivaAnterior', 'contadorAtual', 'dataContador', 'p2p']) delete copia[k];
+    copia.codigo = proximoCodigo();
+    if (Array.isArray(copia.discos)) copia.discos.forEach((x) => delete x.serie);
+    if (Array.isArray(copia.monitores)) copia.monitores.forEach((x) => delete x.serie);
+    formEquipamento(null, copia);
+  };
+  if (podeSenhas()) {
+    const alvo = $('#creds-eq');
+    const desenhar = async () => {
+      const l = (await carregarCreds()).filter((x) => x.equipamento_id === id);
+      alvo.innerHTML = `<div class="card no-print" style="padding:0"><div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Senhas deste equipamento</h2><button class="btn peq pri" id="b-nova-cred">+ Nova senha</button></div>${l.length ? tabelaCreds(l, { mostrarCliente: false }) : '<div class="vazio" style="padding:14px">Nenhuma senha ligada a este equipamento.</div>'}</div>`;
+      $('#b-nova-cred').onclick = () => formCred(null, { cliente_id: e.clienteId, equipamento_id: id, tipo: grupoDe(e) === 'rede' ? 'wifi' : 'equipamento' }, desenhar);
+    };
+    ligarCreds(alvo, desenhar);
+    desenhar().catch((er) => toast(er.message, 1));
+  }
+}
+
+// ----- Atendimentos / manutenções -----
+function tabelaAtend(lista, { cliente = true } = {}) {
+  if (!lista.length) return '<div class="vazio">Nenhum atendimento registrado.</div>';
+  return `<div class="tabela-wrap"><table><thead><tr><th>Data</th>${cliente ? '<th>Cliente</th>' : ''}<th>Tipo</th><th>O que foi feito</th><th class="esconde-cel">Técnico</th><th>Situação</th></tr></thead><tbody>
+  ${lista.map((m) => `<tr class="clicavel" data-atend="${esc(m.id)}"><td style="white-space:nowrap">${dataBR(m.data)}${m.horaInicio ? `<div class="suave peq">${esc(m.horaInicio)}${m.horaFim ? '–' + esc(m.horaFim) : ''}</div>` : ''}</td>
+    ${cliente ? `<td>${esc(nomeCliente(m.clienteId))}</td>` : ''}<td>${esc(m.tipo)}<div class="suave peq">${(m.equipamentos || []).length} equipamento(s)</div></td>
+    <td>${esc((m.descricao || m.problema || '').slice(0, 160))}${(m.descricao || '').length > 160 ? '…' : ''}</td><td class="esconde-cel">${esc(m.tecnico || '')}</td><td>${tagStatus(m.status)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+function telaAtendimentos() {
+  const F = FILTRO.atend, q = norm(F.q);
+  const lista = atendimentosDe((m) => (!F.cliente || m.clienteId === F.cliente) && (!F.tipo || m.tipo === F.tipo) && (!F.de || (m.data || '') >= F.de) && (!F.ate || (m.data || '') <= F.ate)
+    && (!q || norm([m.descricao, m.problema, m.tecnico, m.pendencias, nomeCliente(m.clienteId), (m.pecas || []).map((p) => p.peca).join(' ')].join(' ')).includes(q)));
+  casca(topo('Atendimentos e manutenções', '<button class="btn pri" data-novo-atend>+ Registrar atendimento</button>', `${lista.length} registro(s)`) + `
+  <div class="filtros">
+    <input type="search" id="q" placeholder="Buscar no que foi feito, peças, técnico..." value="${esc(F.q)}">
+    <select id="f-cliente"><option value="">Todos os clientes</option>${Object.values(DB.clientes).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map((c) => `<option value="${esc(c.id)}"${c.id === F.cliente ? ' selected' : ''}>${esc(c.nome)}</option>`).join('')}</select>
+    <select id="f-tipo"><option value="">Todos os tipos</option>${TIPOS_ATEND.map((t) => `<option${t === F.tipo ? ' selected' : ''}>${t}</option>`).join('')}</select>
+    <input type="date" id="f-de" value="${esc(F.de)}" title="De"><input type="date" id="f-ate" value="${esc(F.ate)}" title="Até">
+  </div>
+  <div class="card" style="padding:0">${tabelaAtend(lista)}</div>`);
+  ligarComuns();
+  $('#q').oninput = (e) => { F.q = e.target.value; const p = e.target.selectionStart; telaAtendimentos(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
+  for (const [idEl, k] of [['f-cliente', 'cliente'], ['f-tipo', 'tipo'], ['f-de', 'de'], ['f-ate', 'ate']]) $('#' + idEl).onchange = (e) => { F[k] = e.target.value; telaAtendimentos(); };
+}
+function formAtendimento(m, pre = {}) {
+  const novo = !m;
+  const C = cfg();
+  let d = m ? JSON.parse(JSON.stringify(m)) : { data: hoje(), tipo: pre.tipo || 'Visita periódica', status: 'Concluído', tecnico: EU.nome, clienteId: pre.clienteId || '', equipamentos: pre.equipamentos || [], checklist: [], contadores: {} };
+  if (novo && pre.equipamentos === undefined) d.equipamentos = [];
+  const m2 = modal({
+    titulo: novo ? 'Registrar atendimento' : 'Editar atendimento', corpo: '<div id="campos-at"></div>',
+    extraRodape: novo ? '' : '<button type="button" class="btn perigo" id="b-apagar-at">Apagar</button>',
+    salvar: async (form) => {
+      ler();
+      if (!d.clienteId) { toast('Escolha o cliente', 1); return false; }
+      if (!d.data) { toast('Informe a data', 1); return false; }
+      const ops = [];
+      d.id = d.id || uid();
+      if (!d.criadoEm) { d.criadoEm = new Date().toISOString(); d.criadoPor = EU.nome; }
+      d.atualizadoEm = new Date().toISOString(); d.atualizadoPor = EU.nome;
+      ops.push({ c: 'manutencoes', id: d.id, dados: d });
+      // atualiza o contador das impressoras e a situação dos equipamentos
+      for (const [eid, cont] of Object.entries(d.contadores || {})) {
+        const e = DB.equipamentos[eid];
+        if (e && cont !== '' && (!e.dataContador || d.data >= e.dataContador)) ops.push({ c: 'equipamentos', id: eid, dados: { ...e, contadorAtual: Number(cont), dataContador: d.data } });
+      }
+      if (d.status !== 'Agendado' && d.novaSituacao) {
+        for (const eid of d.equipamentos) {
+          const atual = ops.find((o) => o.id === eid && o.c === 'equipamentos');
+          const e = atual ? atual.dados : DB.equipamentos[eid];
+          if (e && e.status !== d.novaSituacao) { const n = { ...e, status: d.novaSituacao }; if (atual) atual.dados = n; else ops.push({ c: 'equipamentos', id: eid, dados: n }); }
+        }
+      }
+      await salvarVarios(ops);
+      toast('Atendimento salvo');
+      render();
+    },
+  });
+  const F = m2.form;
+  function ler() {
+    const el = F.elements;
+    for (const k of ['clienteId', 'data', 'horaInicio', 'horaFim', 'tipo', 'status', 'tecnico', 'problema', 'descricao', 'pendencias', 'proximaVisita', 'valor', 'responsavelCliente', 'novaSituacao']) if (el[k]) d[k] = el[k].value.trim();
+    if (d.valor !== '') d.valor = Number(d.valor);
+    d.equipamentos = $$('[name="eq"]:checked', F).map((i) => i.value);
+    d.preventivaEquip = $$('[name="prevEq"]:checked', F).map((i) => i.value);
+    for (const x of d.preventivaEquip) if (!d.equipamentos.includes(x)) d.equipamentos.push(x);
+    d.checklist = $$('[name="chk"]:checked', F).map((i) => i.value);
+    d.contadores = {};
+    for (const i of $$('[name^="cont:"]', F)) if (i.value !== '') d.contadores[i.name.slice(5)] = Number(i.value);
+    const box = F.querySelector('[data-lista="pecas"]');
+    if (box) d.pecas = $$('.rep-linha', box).map((ln) => ({ peca: ln.querySelector('[name="sub:peca"]').value.trim(), qtd: ln.querySelector('[name="sub:qtd"]').value.trim(), valor: ln.querySelector('[name="sub:valor"]').value.trim(), equipamento: ln.querySelector('[name="sub:equipamento"]').value })).filter((p) => p.peca);
+  }
+  function desenhar() {
+    const eqs = Object.values(DB.equipamentos).filter((e) => e.clienteId === d.clienteId && (equipAtivo(e) || d.equipamentos.includes(e.id))).sort((a, b) => (a.tipo || '').localeCompare(b.tipo || '') || rotuloEquip(a).localeCompare(rotuloEquip(b), 'pt-BR'));
+    const grupos = new Set(eqs.filter((e) => d.equipamentos.includes(e.id)).map(grupoDe));
+    if (!grupos.size) for (const e of eqs) grupos.add(grupoDe(e));
+    const itensChk = [...new Set([...[...grupos].flatMap((g) => C.checklist[g] || []), ...d.checklist])];
+    const impressoras = eqs.filter((e) => grupoDe(e) === 'impressora' && d.equipamentos.includes(e.id));
+    const ehPrev = d.tipo === 'Manutenção preventiva';
+    const pecaSub = [f('peca', 'Peça / serviço', 'text'), f('qtd', 'Qtd', 'number'), f('valor', 'Valor (R$)', 'number', { step: '0.01' }), f('equipamento', 'Equipamento', 'select', { op: [['', '—'], ...eqs.filter((e) => d.equipamentos.includes(e.id)).map((e) => [e.id, e.nome || rotuloEquip(e)])] })];
+    $('#campos-at', F).innerHTML = `
+    <div class="form-sec"><h3>Atendimento</h3><div class="campos">
+      <div class="campo l2"><label>Cliente *</label><select name="clienteId" required>${opcoesClientes(d.clienteId)}</select></div>
+      <div class="campo"><label>Tipo</label><select name="tipo">${TIPOS_ATEND.map((t) => `<option${t === d.tipo ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
+      <div class="campo"><label>Situação</label><select name="status">${STATUS_ATEND.map((t) => `<option${t === d.status ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
+      <div class="campo"><label>Data *</label><input type="date" name="data" value="${esc(d.data)}" required></div>
+      <div class="campo"><label>Início</label><input type="time" name="horaInicio" value="${esc(d.horaInicio || '')}"></div>
+      <div class="campo"><label>Fim</label><input type="time" name="horaFim" value="${esc(d.horaFim || '')}"></div>
+      <div class="campo"><label>Técnico</label><input name="tecnico" value="${esc(d.tecnico || '')}" list="dl-tecnicos"><datalist id="dl-tecnicos">${[...new Set([...C.tecnicos.split(/[,\n]/).map((s) => s.trim()), ...Object.values(DB.manutencoes).map((x) => x.tecnico)].filter(Boolean))].map((t) => `<option value="${esc(t)}">`).join('')}</datalist></div>
+      <div class="campo l4"><label>Problema relatado / motivo</label><textarea name="problema" placeholder="O que o cliente pediu ou relatou">${esc(d.problema || '')}</textarea></div>
+    </div></div>
+    <div class="form-sec"><h3>Equipamentos atendidos</h3>
+      ${!d.clienteId ? '<div class="suave">Escolha o cliente para ver os equipamentos.</div>' : !eqs.length ? '<div class="suave">Este cliente ainda não tem equipamentos cadastrados.</div>' : `
+      <div style="margin-bottom:6px"><button type="button" class="btn peq" id="b-todos">Marcar todos</button> <button type="button" class="btn peq" id="b-nenhum">Desmarcar</button></div>
+      <div class="tabela-wrap"><table class="sub-tabela"><thead><tr><th style="width:30px"></th><th>Equipamento</th><th class="esconde-cel">Setor / local</th><th>Próxima preventiva</th>${ehPrev ? '' : '<th title="Marque se neste atendimento foi feita a preventiva deste equipamento">Fez preventiva?</th>'}</tr></thead><tbody>
+      ${eqs.map((e) => `<tr><td><input type="checkbox" name="eq" value="${esc(e.id)}"${d.equipamentos.includes(e.id) ? ' checked' : ''}></td><td>${esc(rotuloEquip(e))}<div class="suave peq">${esc(nomeTipo(e.tipo))}${e.numeroSerie ? ' · SN ' + esc(e.numeroSerie) : ''}</div></td><td class="esconde-cel">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td><td>${tagSituacao(proximaPreventiva(e), '—')}</td>${ehPrev ? '' : `<td><input type="checkbox" name="prevEq" value="${esc(e.id)}"${(d.preventivaEquip || []).includes(e.id) ? ' checked' : ''}></td>`}</tr>`).join('')}
+      </tbody></table></div>
+      <div class="campos" style="margin-top:8px"><div class="campo l2"><label>Mudar a situação dos equipamentos marcados para</label><select name="novaSituacao"><option value="">— não mudar —</option>${SEC_IDENT.campos.find((c) => c.k === 'status').op.map((s) => `<option${s === d.novaSituacao ? ' selected' : ''}>${s}</option>`).join('')}</select></div></div>`}
+    </div>
+    ${impressoras.length ? `<div class="form-sec"><h3>Leitura do contador das impressoras</h3><div class="campos">${impressoras.map((e) => `<div class="campo"><label>${esc(e.nome || rotuloEquip(e))}</label><input type="number" name="cont:${esc(e.id)}" value="${esc(d.contadores?.[e.id] ?? '')}" placeholder="anterior: ${esc(e.contadorAtual ?? '—')}"></div>`).join('')}</div></div>` : ''}
+    ${itensChk.length ? `<div class="form-sec"><h3>Checklist</h3><div class="checks">${itensChk.map((t) => `<label><input type="checkbox" name="chk" value="${esc(t)}"${d.checklist.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('')}</div></div>` : ''}
+    <div class="form-sec"><h3>Serviço realizado</h3><div class="campos">
+      <div class="campo l4"><label>O que foi feito</label><textarea name="descricao" style="min-height:90px">${esc(d.descricao || '')}</textarea></div>
+      <div class="campo l4"><label>Peças trocadas / serviços cobrados</label>${htmlLista({ k: 'pecas', sub: pecaSub }, d.pecas)}</div>
+      <div class="campo l2"><label>Pendências / anotações para a próxima visita</label><textarea name="pendencias">${esc(d.pendencias || '')}</textarea></div>
+      <div class="campo"><label>Próxima visita (opcional)</label><input type="date" name="proximaVisita" value="${esc(d.proximaVisita || '')}"><span class="suave peq">Em branco: calcula pela periodicidade do cliente</span></div>
+      <div class="campo"><label>Valor cobrado (R$)</label><input type="number" step="0.01" name="valor" value="${esc(d.valor ?? '')}"></div>
+      <div class="campo l2"><label>Quem acompanhou / responsável no cliente</label><input name="responsavelCliente" value="${esc(d.responsavelCliente || '')}"></div>
+    </div></div>`;
+    F.elements.clienteId.onchange = () => { ler(); d.equipamentos = []; d.contadores = {}; desenhar(); };
+    F.elements.tipo.onchange = () => { ler(); desenhar(); };
+    $$('[name="eq"]', F).forEach((i) => (i.onchange = () => { ler(); desenhar(); }));
+    const bt = $('#b-todos', F), bn = $('#b-nenhum', F);
+    if (bt) bt.onclick = () => { ler(); d.equipamentos = eqs.map((e) => e.id); desenhar(); };
+    if (bn) bn.onclick = () => { ler(); d.equipamentos = []; desenhar(); };
+  }
+  desenhar();
+  const b = $('#b-apagar-at');
+  if (b) b.onclick = async () => {
+    if (!confirmar('Apagar este atendimento do histórico?')) return;
+    try { await apagar('manutencoes', m.id); m2.fechar(); toast('Atendimento apagado'); render(); } catch (e) { toast(e.message, 1); }
+  };
+}
+function verAtendimento(id) {
+  const m = DB.manutencoes[id];
+  if (!m) return;
+  const eqs = (m.equipamentos || []).map((x) => DB.equipamentos[x]).filter(Boolean);
+  const totalPecas = (m.pecas || []).reduce((s, p) => s + (Number(p.valor) || 0) * (Number(p.qtd) || 1), 0);
+  const v = modal({
+    titulo: `${m.tipo} — ${dataBR(m.data)}`,
+    corpo: `<dl class="dl">
+      <div class="l2"><dt>Cliente</dt><dd><a href="#/cliente/${esc(m.clienteId)}">${esc(nomeCliente(m.clienteId))}</a></dd></div>
+      <div><dt>Situação</dt><dd>${tagStatus(m.status)}</dd></div>
+      <div><dt>Horário</dt><dd>${esc([m.horaInicio, m.horaFim].filter(Boolean).join(' – ') || '—')}</dd></div>
+      <div><dt>Técnico</dt><dd>${esc(m.tecnico || '—')}</dd></div>
+      <div><dt>Acompanhou</dt><dd>${esc(m.responsavelCliente || '—')}</dd></div>
+      <div><dt>Valor cobrado</dt><dd>${moeda(m.valor) || '—'}</dd></div>
+      <div><dt>Próxima visita</dt><dd>${dataBR(m.proximaVisita) || '—'}</dd></div>
+      ${m.problema ? `<div class="l4"><dt>Problema relatado</dt><dd>${esc(m.problema).replace(/\n/g, '<br>')}</dd></div>` : ''}
+      ${m.descricao ? `<div class="l4"><dt>O que foi feito</dt><dd>${esc(m.descricao).replace(/\n/g, '<br>')}</dd></div>` : ''}
+      ${m.pendencias ? `<div class="l4"><dt>Pendências</dt><dd>${esc(m.pendencias).replace(/\n/g, '<br>')}</dd></div>` : ''}
+    </dl>
+    ${eqs.length ? `<h3 style="margin-top:16px">Equipamentos (${eqs.length})</h3><table class="sub-tabela"><tbody>${eqs.map((e) => `<tr><td><a href="#/equipamento/${esc(e.id)}">${esc(rotuloEquip(e))}</a></td><td class="suave">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td><td>${m.contadores?.[e.id] != null ? 'contador: ' + Number(m.contadores[e.id]).toLocaleString('pt-BR') : ''}${(m.preventivaEquip || []).includes(e.id) ? ' <span class="tag ok">preventiva</span>' : ''}</td></tr>`).join('')}</tbody></table>` : ''}
+    ${(m.checklist || []).length ? `<h3 style="margin-top:16px">Checklist</h3><div class="checks">${m.checklist.map((t) => `<div>✓ ${esc(t)}</div>`).join('')}</div>` : ''}
+    ${(m.pecas || []).length ? `<h3 style="margin-top:16px">Peças e serviços</h3><table class="sub-tabela"><thead><tr><th>Peça / serviço</th><th>Qtd</th><th>Valor</th><th>Equipamento</th></tr></thead><tbody>${m.pecas.map((p) => `<tr><td>${esc(p.peca)}</td><td>${esc(p.qtd || '')}</td><td>${moeda(p.valor)}</td><td>${esc(DB.equipamentos[p.equipamento]?.nome || '')}</td></tr>`).join('')}${totalPecas ? `<tr><td colspan="2"><b>Total</b></td><td><b>${moeda(totalPecas)}</b></td><td></td></tr>` : ''}</tbody></table>` : ''}
+    <p class="suave peq" style="margin-top:14px">Registrado por ${esc(m.criadoPor || '?')} em ${new Date(m.criadoEm || Date.now()).toLocaleString('pt-BR')}</p>`,
+    extraRodape: '<button type="button" class="btn" id="b-imp-at">Imprimir</button><button type="button" class="btn pri" id="b-edit-at">Editar</button>',
+  });
+  $('#b-edit-at').onclick = () => { v.fechar(); formAtendimento(m); };
+  $('#b-imp-at').onclick = () => {
+    const w = window.open('', '_blank');
+    if (!w) return toast('Permita pop-ups para imprimir', 1);
+    w.document.write(`<!doctype html><meta charset="utf-8"><title>Atendimento ${dataBR(m.data)}</title><style>body{font:13px system-ui,Arial;margin:24px;color:#111}h1{font-size:18px}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:5px;text-align:left}.dl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.dl .l4{grid-column:1/-1}.dl .l2{grid-column:span 2}dt{font-size:11px;color:#666;text-transform:uppercase}dd{margin:0}.tag{font-weight:600}a{color:#111;text-decoration:none}h3{font-size:12px;text-transform:uppercase;color:#555}.checks{columns:2}.assin{margin-top:60px;display:flex;gap:40px}.assin div{flex:1;border-top:1px solid #000;text-align:center;padding-top:4px}</style>
+      <h1>${esc(cfg().empresa)} — Relatório de atendimento</h1>${$('.modal-corpo', v.fundo).innerHTML}<div class="assin"><div>${esc(m.tecnico || 'Técnico')}</div><div>Cliente${m.responsavelCliente ? ': ' + esc(m.responsavelCliente) : ''}</div></div><script>print()<\/script>`);
+    w.document.close();
+  };
+}
+
+// ----- Senhas -----
+async function telaSenhas() {
+  if (!podeSenhas()) { location.hash = '#/painel'; return; }
+  const F = FILTRO.senha;
+  const aba = telaSenhas.aba || 'lista';
+  casca(topo('Senhas', '<button class="btn pri" id="b-nova">+ Nova senha</button>', 'Roteadores, Wi-Fi, DVRs, sistemas e acessos dos clientes') + `
+  ${ehAdmin() ? `<div class="abas"><button data-aba="lista" class="${aba === 'lista' ? 'ativo' : ''}">Senhas</button><button data-aba="log" class="${aba === 'log' ? 'ativo' : ''}">Quem viu / alterou</button></div>` : ''}
+  <div id="area-senhas"><div class="card vazio">Carregando...</div></div>`);
+  $('#b-nova').onclick = () => formCred(null, { cliente_id: F.cliente }, () => telaSenhas());
+  $$('[data-aba]').forEach((b) => (b.onclick = () => { telaSenhas.aba = b.dataset.aba; telaSenhas(); }));
+  const area = $('#area-senhas');
+  try {
+    if (aba === 'log' && ehAdmin()) {
+      const log = await api('GET', '/api/credenciais/log');
+      area.innerHTML = `<div class="card" style="padding:0">${log.length ? `<div class="tabela-wrap"><table><thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Senha</th><th class="esconde-cel">IP</th></tr></thead><tbody>${log.map((l) => `<tr><td style="white-space:nowrap">${esc(new Date(l.quando.replace(' ', 'T')).toLocaleString('pt-BR'))}</td><td>${esc(l.usuario_nome)}</td><td>${esc(l.acao)}</td><td>${esc(l.titulo)}</td><td class="esconde-cel mono peq">${esc(l.ip || '')}</td></tr>`).join('')}</tbody></table></div>` : '<div class="vazio">Nenhum registro ainda.</div>'}</div>`;
+      return;
+    }
+    const todas = await carregarCreds(true);
+    const desenhar = () => {
+      const q = norm(F.q);
+      const l = todas.filter((c) => (!F.cliente || c.cliente_id === F.cliente) && (!F.tipo || c.tipo === F.tipo)
+        && (!q || norm([c.titulo, c.usuario, c.ssid, c.endereco, c.obs, nomeCliente(c.cliente_id), c.equipamento_id && DB.equipamentos[c.equipamento_id] ? rotuloEquip(DB.equipamentos[c.equipamento_id]) : ''].join(' ')).includes(q)))
+        .sort((a, b) => nomeCliente(a.cliente_id).localeCompare(nomeCliente(b.cliente_id), 'pt-BR') || a.titulo.localeCompare(b.titulo, 'pt-BR'));
+      $('#lista-creds').innerHTML = tabelaCreds(l);
+    };
+    area.innerHTML = `<div class="filtros"><input type="search" id="q" placeholder="Buscar por descrição, SSID, usuário, IP..." value="${esc(F.q)}">
+      <select id="f-cliente"><option value="">Todos os clientes</option>${Object.values(DB.clientes).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map((c) => `<option value="${esc(c.id)}"${c.id === F.cliente ? ' selected' : ''}>${esc(c.nome)}</option>`).join('')}</select>
+      <select id="f-tipo"><option value="">Todos os tipos</option>${Object.entries(TIPOS_CRED_CURTO).map(([k, v]) => `<option value="${k}"${k === F.tipo ? ' selected' : ''}>${v}</option>`).join('')}</select></div>
+      <div class="card" style="padding:0" id="lista-creds"></div>
+      <p class="suave peq">As senhas ficam criptografadas no servidor e só aparecem quando você clica em "mostrar" ou "copiar". Cada visualização fica registrada.</p>`;
+    desenhar();
+    ligarCreds($('#lista-creds'), () => telaSenhas());
+    $('#q').oninput = (e) => { F.q = e.target.value; desenhar(); };
+    $('#f-cliente').onchange = (e) => { F.cliente = e.target.value; desenhar(); };
+    $('#f-tipo').onchange = (e) => { F.tipo = e.target.value; desenhar(); };
+  } catch (e) { area.innerHTML = `<div class="card vazio">${esc(e.message)}</div>`; }
+}
+
+// ----- Usuários -----
+async function telaUsuarios() {
+  if (!ehAdmin()) { location.hash = '#/painel'; return; }
+  casca(topo('Usuários do sistema', '<button class="btn pri" id="b-novo">+ Novo usuário</button>', 'Quem pode entrar no sistema') + '<div class="card" style="padding:0" id="lista-u"><div class="vazio">Carregando...</div></div>' +
+    '<div class="info-caixa"><b>Administrador</b>: acesso a tudo, inclusive usuários e configurações. <b>Técnico</b>: cadastra clientes, equipamentos e atendimentos. A permissão <b>"Pode ver senhas"</b> libera o cofre de senhas para o técnico.</div>');
+  const us = await api('GET', '/api/usuarios');
+  $('#lista-u').innerHTML = `<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>Usuário</th><th>Perfil</th><th>Senhas</th><th>Situação</th><th></th></tr></thead><tbody>
+    ${us.map((u) => `<tr><td>${esc(u.nome)}</td><td class="mono">${esc(u.login)}</td><td>${u.perfil === 'admin' ? 'Administrador' : 'Técnico'}</td><td>${u.perfil === 'admin' || u.pode_senhas ? '<span class="tag ok">pode ver</span>' : '<span class="tag">não</span>'}</td><td>${u.ativo ? '<span class="tag ok">ativo</span>' : '<span class="tag">bloqueado</span>'}</td><td><button class="btn peq" data-u="${u.id}">Editar</button></td></tr>`).join('')}</tbody></table></div>`;
+  $('#b-novo').onclick = () => formUsuario();
+  $$('[data-u]').forEach((b) => (b.onclick = () => formUsuario(us.find((u) => String(u.id) === b.dataset.u))));
+}
+function formUsuario(u) {
+  const novo = !u;
+  modal({
+    titulo: novo ? 'Novo usuário' : 'Editar usuário', estreito: true,
+    corpo: `<div class="campos" style="grid-template-columns:1fr 1fr">
+      <div class="campo l4"><label>Nome *</label><input name="nome" value="${esc(u?.nome || '')}" required></div>
+      <div class="campo l2"><label>Usuário (login) *</label><input name="login" value="${esc(u?.login || '')}" ${novo ? 'required' : 'disabled'} autocomplete="off"></div>
+      <div class="campo l2"><label>Perfil</label><select name="perfil"><option value="tecnico">Técnico</option><option value="admin"${u?.perfil === 'admin' ? ' selected' : ''}>Administrador</option></select></div>
+      <div class="campo l4"><label>${novo ? 'Senha * (mínimo 6 caracteres)' : 'Nova senha (deixe em branco para não trocar)'}</label><input name="senha" type="password" autocomplete="new-password" ${novo ? 'required' : ''}></div>
+      <div class="campo l4"><label style="display:flex;gap:8px;font-weight:400;color:inherit"><input type="checkbox" name="pode_senhas" style="width:auto"${u?.pode_senhas ? ' checked' : ''}> Pode ver o cofre de senhas dos clientes</label></div>
+      ${novo ? '' : `<div class="campo l4"><label style="display:flex;gap:8px;font-weight:400;color:inherit"><input type="checkbox" name="ativo" style="width:auto"${u.ativo ? ' checked' : ''}> Acesso liberado (desmarque para bloquear)</label></div>`}
+    </div>`,
+    salvar: async (form) => {
+      const el = form.elements;
+      const d = { nome: el.nome.value, perfil: el.perfil.value, pode_senhas: el.pode_senhas.checked };
+      if (el.senha.value) d.senha = el.senha.value;
+      if (novo) { d.login = el.login.value; await api('POST', '/api/usuarios', d); }
+      else { d.ativo = el.ativo.checked; await api('PUT', '/api/usuarios/' + u.id, d); }
+      toast('Usuário salvo'); telaUsuarios();
+    },
+  });
+}
+function telaConta() {
+  casca(topo('Minha senha') + `<div class="card" style="max-width:420px"><form id="f-senha">
+    <div class="campo" style="margin-bottom:10px"><label>Senha atual</label><input type="password" name="atual" required autocomplete="current-password"></div>
+    <div class="campo" style="margin-bottom:10px"><label>Nova senha (mínimo 6 caracteres)</label><input type="password" name="nova" required autocomplete="new-password"></div>
+    <div class="campo" style="margin-bottom:14px"><label>Repita a nova senha</label><input type="password" name="nova2" required autocomplete="new-password"></div>
+    <button class="btn pri">Trocar senha</button></form></div>`);
+  $('#f-senha').onsubmit = async (ev) => {
+    ev.preventDefault();
+    const el = ev.target.elements;
+    if (el.nova.value !== el.nova2.value) return toast('As senhas novas não são iguais', 1);
+    try { await api('POST', '/api/me/senha', { atual: el.atual.value, nova: el.nova.value }); toast('Senha trocada'); ev.target.reset(); } catch (e) { toast(e.message, 1); }
+  };
+}
+
+// ----- Configurações -----
+function telaConfig() {
+  if (!ehAdmin()) { location.hash = '#/painel'; return; }
+  const C = cfg();
+  const g = { computador: 'Computadores / notebooks / servidores', impressora: 'Impressoras', rede: 'Roteadores / rede', dvr: 'DVR / câmeras', nobreak: 'Nobreaks' };
+  casca(topo('Configurações') + `<form id="f-cfg">
+  <div class="card"><h2>Geral</h2><div class="campos">
+    <div class="campo l2"><label>Nome da empresa</label><input name="empresa" value="${esc(C.empresa)}"></div>
+    <div class="campo"><label>Avisar com quantos dias de antecedência</label><input type="number" name="diasAviso" value="${C.diasAviso}"></div>
+    <div class="campo l4"><label>Técnicos (separados por vírgula — aparecem como sugestão nos atendimentos)</label><input name="tecnicos" value="${esc(C.tecnicos)}"></div>
+  </div></div>
+  <div class="card"><h2>Preventiva padrão por tipo de equipamento</h2><p class="suave peq" style="margin-top:-6px">Usado quando o equipamento e o cliente não têm periodicidade própria. Deixe 0 para não controlar.</p><div class="campos">
+    ${Object.entries(g).map(([k, l]) => `<div class="campo"><label>${l} (dias)</label><input type="number" name="per-${k}" value="${C.periodo[k] ?? 0}"></div>`).join('')}
+  </div></div>
+  <div class="card"><h2>Checklists das manutenções</h2><p class="suave peq" style="margin-top:-6px">Um item por linha.</p><div class="campos">
+    ${Object.entries(g).map(([k, l]) => `<div class="campo l2"><label>${l}</label><textarea name="chk-${k}" style="min-height:150px">${esc((C.checklist[k] || []).join('\n'))}</textarea></div>`).join('')}
+  </div></div>
+  <div class="acoes" style="margin-bottom:20px"><button class="btn pri">Salvar configurações</button></div>
+  </form>
+  <div class="card"><h2>Cópia dos dados</h2><p class="suave">O servidor faz um backup automático por dia. Aqui você também pode baixar todos os cadastros (clientes, equipamentos e atendimentos) num arquivo. As senhas do cofre não entram neste arquivo.</p>
+    <button class="btn" id="b-exp">Baixar cópia (JSON)</button> <button class="btn" id="b-csv-all">Baixar inventário completo (planilha)</button></div>`);
+  $('#f-cfg').onsubmit = async (ev) => {
+    ev.preventDefault();
+    const el = ev.target.elements;
+    const d = { ...(DB.config.geral || {}), id: 'geral', empresa: el.empresa.value.trim(), diasAviso: Number(el.diasAviso.value) || 15, tecnicos: el.tecnicos.value, periodo: {}, checklist: {} };
+    for (const k of Object.keys(g)) { d.periodo[k] = Number(el['per-' + k].value) || 0; d.checklist[k] = el['chk-' + k].value.split('\n').map((s) => s.trim()).filter(Boolean); }
+    try { await salvar('config', d); toast('Configurações salvas'); render(); } catch (e) { toast(e.message, 1); }
+  };
+  $('#b-exp').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify({ exportadoEm: new Date().toISOString(), clientes: DB.clientes, equipamentos: DB.equipamentos, manutencoes: DB.manutencoes, config: DB.config }, null, 1)], { type: 'application/json' }));
+    a.download = `rminfo-dados-${hoje()}.json`; a.click();
+  };
+  $('#b-csv-all').onclick = () => exportarCsv(Object.values(DB.equipamentos).sort((a, b) => nomeCliente(a.clienteId).localeCompare(nomeCliente(b.clienteId), 'pt-BR')));
+}
+
+// ---------------- início ----------------
+async function iniciar() {
+  $('#raiz').innerHTML = '<div class="vazio" style="padding:80px">Carregando...</div>';
+  VERSAO = 0; for (const k of Object.keys(DB)) DB[k] = {};
+  CREDS = null;
+  await carregar();
+  if (!location.hash) location.hash = '#/painel';
+  render();
+  avisarNavegador();
+}
+(async () => {
+  try { EU = await api('GET', '/api/me'); await iniciar(); }
+  catch { if (!EU) telaLogin(); }
+})();
+</script>
+</body>
+</html>
