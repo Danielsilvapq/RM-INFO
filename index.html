@@ -119,6 +119,30 @@ tbody tr.clicavel:hover{background:#f7f9ff}
 .abas button.ativo{border-color:var(--azul);color:var(--azul)}
 .senha-val{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--cinza-cl);padding:1px 6px;border-radius:5px}
 .menu-btn{display:none}
+/* etiquetas Zebra */
+.etq-impr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+.etq-impr>.card{margin-bottom:0;min-width:0}
+.etq-tela{background:repeating-conic-gradient(#e9edf3 0% 25%,#f6f8fb 0% 50%) 50%/16px 16px;border-radius:8px;padding:18px;margin:12px 0;display:flex;justify-content:center;align-items:center;min-height:160px}
+.etq-tela canvas{max-width:100%;max-height:420px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25),0 6px 16px rgba(16,24,40,.12);border-radius:3px;image-rendering:pixelated}
+.editor-prev .etq-tela canvas{width:100%;height:auto}
+#mod-amostra{padding:6px 8px;border:1px solid var(--borda);border-radius:7px;background:#fff;max-width:100%}
+.etq-mini{width:100%;min-width:70px;padding:4px 6px;border:1px solid var(--borda);border-radius:6px;background:#fff}
+.modelos-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-bottom:12px}
+.modelo-card{margin-bottom:0;display:flex;flex-direction:column;gap:10px}
+.modelo-card .acoes{margin-top:auto}
+.modelo-prev{background:var(--cinza-cl);border-radius:8px;height:150px;display:flex;align-items:center;justify-content:center;padding:12px}
+.modelo-prev canvas{max-width:100%;max-height:100%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);image-rendering:pixelated}
+.editor-etq{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start}
+.editor-prev{position:sticky;top:12px}
+.elem{border:1px solid var(--borda);border-radius:8px;padding:10px;margin-bottom:10px}
+.elem-sel{border-color:var(--azul);box-shadow:0 0 0 2px #bfd0ff}
+.elem-topo{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.elem-titulo{border:0;background:none;padding:2px 0;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.chk-linha{display:flex!important;gap:7px;align-items:center;font-weight:400!important;color:var(--texto)!important;cursor:pointer}
+.chk-linha input{width:auto!important}
+.editor-lado .campos{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:1000px){.etq-impr,.editor-etq{grid-template-columns:minmax(0,1fr)}.editor-prev{position:static;order:-1}}
+@media (max-width:760px){.editor-lado .campos{grid-template-columns:1fr 1fr}}
 .demo-cred{margin-top:18px;padding-top:14px;border-top:1px solid var(--borda);display:grid;gap:8px}
 .demo-cred button{text-align:left;border:1px solid var(--borda);background:var(--fundo);border-radius:8px;padding:9px 11px;cursor:pointer;line-height:1.35}
 .demo-cred button:hover{border-color:var(--azul)}
@@ -152,6 +176,8 @@ tbody tr.clicavel:hover{background:#f7f9ff}
   th{position:static}
 }
 </style>
+<!-- desenha o QR code na pré-visualização (opcional: sem internet aparece um QR ilustrativo, e a Zebra gera o verdadeiro) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" async onload="window.__etqRedesenhar && window.__etqRedesenhar()"></script>
 </head>
 <body>
 <div id="raiz"></div>
@@ -206,7 +232,7 @@ const DEMO = (() => {
   try { sessao = sessionStorage.getItem('rminfo-demo-user'); } catch {}
 
   function exemplo() {
-    const R = { clientes: {}, equipamentos: {}, manutencoes: {}, config: {} };
+    const R = { clientes: {}, equipamentos: {}, manutencoes: {}, etiquetas: {}, config: {} };
     const criado = new Date(Date.now() - 400 * 864e5).toISOString();
     const add = (c, o) => { R[c][o.id] = { criadoEm: criado, criadoPor: 'Administrador', atualizadoEm: criado, atualizadoPor: 'Administrador', ...o }; };
     // clientes
@@ -319,6 +345,13 @@ const DEMO = (() => {
     at({ id: 'm7', clienteId: 'c4', data: d(3), horaInicio: '08:00', tipo: 'Manutenção preventiva', status: 'Agendado', equipamentos: ['e21', 'e22', 'e23', 'e24'], problema: 'Preventiva do laboratório nas férias dos alunos.' });
     at({ id: 'm8', clienteId: 'c4', data: d(-130), tipo: 'Manutenção preventiva', equipamentos: ['e24'], contadores: { e24: 96400 }, checklist: ['Limpeza interna', 'Verificação do cilindro/unidade de imagem'], descricao: 'Limpeza e troca do toner.', pecas: [{ peca: 'Toner TK-1175', qtd: '1', valor: '210', equipamento: 'e24' }], valor: 290 });
     R.config.geral = { id: 'geral', empresa: 'RM Informática', diasAviso: 15, tecnicos: 'Ricardo Martins, Ana Souza' };
+    const el = (tipo, o) => ({ tipo, x: 2, y: 2, w: 30, h: 8, fonte: 3, origem: 'fixo', valor: '', prefixo: '', linhas: 1, alinhar: 'L', rot: 'N', inverter: false, modulo: 2, legivel: true, tamanho: 4, espessura: 0.3, raio: 0, orient: 'H', ...o });
+    add('etiquetas', { id: 'etq-ponto', nome: 'Ponto de rede 40 × 15 mm', largura: 40, altura: 15, dpi: 203, midia: 'T', escuridao: 4, velocidade: 3, ajusteX: 0, ajusteY: 0, invertida: false, elementos: [
+      el('logo', { x: 1.5, y: 1.5, w: 7, h: 7 }),
+      el('texto', { x: 10, y: 1.5, w: 28, fonte: 6, inverter: true, alinhar: 'C', origem: 'livre', valor: 'Ponto' }),
+      el('texto', { x: 10, y: 8.5, w: 28, fonte: 2.6, alinhar: 'C', origem: 'livre', valor: 'Porta do switch', prefixo: 'Switch porta ' }),
+      el('texto', { x: 1.5, y: 11.5, w: 37, fonte: 2.2, alinhar: 'C', origem: 'campo', valor: 'cliente' }),
+    ] });
 
     const creds = [
       { cliente_id: 'c1', equipamento_id: 'e5', tipo: 'wifi', titulo: 'Wi-Fi funcionários', ssid: 'SORRISO_ADM', senha: 'Sorr1so@2025!' },
@@ -386,7 +419,8 @@ const DEMO = (() => {
       let recusados = 0;
       for (const op of corpo.ops || []) {
         if (op.c === 'config' && !admin) { recusados++; continue; }
-        if (op.apagar) delete S.registros[op.c][op.id]; else S.registros[op.c][op.id] = op.dados;
+        const col = (S.registros[op.c] = S.registros[op.c] || {});
+        if (op.apagar) delete col[op.id]; else col[op.id] = op.dados;
       }
       S.versao++; gravar();
       return { versao: S.versao, recusados };
@@ -462,7 +496,7 @@ async function api(metodo, url, corpo) {
 }
 
 let EU = null;
-const DB = { clientes: {}, equipamentos: {}, manutencoes: {}, config: {} };
+const DB = { clientes: {}, equipamentos: {}, manutencoes: {}, etiquetas: {}, config: {} };
 let VERSAO = 0;
 const ehAdmin = () => EU && EU.perfil === 'admin';
 const podeSenhas = () => EU && (EU.perfil === 'admin' || EU.pode_senhas);
@@ -519,6 +553,7 @@ function cfg() {
     periodo: { ...PERIODO_PADRAO, ...(c.periodo || {}) },
     checklist: { ...CHECKLIST_PADRAO, ...(c.checklist || {}) },
     tecnicos: c.tecnicos || '',
+    logoEtiqueta: c.logoEtiqueta || '',
   };
 }
 
@@ -1145,12 +1180,12 @@ function telaLogin(msg) {
 }
 
 const MENU = [
-  ['painel', 'Painel'], ['clientes', 'Clientes'], ['equipamentos', 'Equipamentos'], ['atendimentos', 'Atendimentos'],
+  ['painel', 'Painel'], ['clientes', 'Clientes'], ['equipamentos', 'Equipamentos'], ['atendimentos', 'Atendimentos'], ['etiquetas', 'Etiquetas Zebra'],
   ['senhas', 'Senhas', () => podeSenhas()], ['usuarios', 'Usuários', () => ehAdmin()], ['config', 'Configurações', () => ehAdmin()],
 ];
 function casca(conteudo) {
   const rota = rotaAtual()[0];
-  const ativo = { cliente: 'clientes', equipamento: 'equipamentos' }[rota] || rota;
+  const ativo = { cliente: 'clientes', equipamento: 'equipamentos', modelo: 'etiquetas' }[rota] || rota;
   const pend = pendencias().atrasos;
   $('#raiz').innerHTML = `<div class="app">
     <aside class="lado" id="lado"><div class="marca"><div class="logo">RM</div><div>${esc(cfg().empresa)}<small>Controle de inventário</small></div></div>
@@ -1177,7 +1212,7 @@ function render(irTopo) {
   if (!EU) return telaLogin();
   const [rota, id] = rotaAtual();
   const telas = { painel: telaPainel, clientes: telaClientes, cliente: telaCliente, equipamentos: telaEquipamentos, equipamento: telaEquipamento,
-    atendimentos: telaAtendimentos, senhas: telaSenhas, usuarios: telaUsuarios, config: telaConfig, conta: telaConta };
+    atendimentos: telaAtendimentos, etiquetas: telaEtiquetas, modelo: telaModelo, senhas: telaSenhas, usuarios: telaUsuarios, config: telaConfig, conta: telaConta };
   (telas[rota] || telaPainel)(id);
   if (irTopo) window.scrollTo(0, 0);
 }
@@ -1391,7 +1426,7 @@ function telaEquipamentos() {
   const F = FILTRO.equip;
   const lista = filtrarEquip();
   const setores = [...new Set(Object.values(DB.equipamentos).filter((e) => !F.cliente || e.clienteId === F.cliente).map((e) => e.setor).filter(Boolean))].sort();
-  casca(topo('Equipamentos', '<button class="btn" id="b-csv">Exportar planilha</button><button class="btn pri" id="b-novo">+ Novo equipamento</button>', `${lista.length} equipamento(s)`) + `
+  casca(topo('Equipamentos', '<button class="btn" id="b-etq-lista" title="Etiquetas Zebra dos equipamentos desta lista">Etiquetas</button><button class="btn" id="b-csv">Exportar planilha</button><button class="btn pri" id="b-novo">+ Novo equipamento</button>', `${lista.length} equipamento(s)`) + `
   <div class="filtros">
     <input type="search" id="q" placeholder="Buscar: série, modelo, IP, hostname, usuário, componente..." value="${esc(F.q)}">
     <select id="f-cliente"><option value="">Todos os clientes</option>${Object.values(DB.clientes).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map((c) => `<option value="${esc(c.id)}"${c.id === F.cliente ? ' selected' : ''}>${esc(c.nome)}</option>`).join('')}</select>
@@ -1404,6 +1439,7 @@ function telaEquipamentos() {
   ligarComuns();
   $('#b-novo').onclick = () => (Object.keys(DB.clientes).length ? formEquipamento(null, { clienteId: F.cliente }) : (toast('Cadastre um cliente primeiro', 1), (location.hash = '#clientes')));
   $('#b-csv').onclick = () => exportarCsv(lista);
+  $('#b-etq-lista').onclick = () => irParaEtiquetas(lista.map((e) => e.id), F.cliente);
   $('#q').oninput = (e) => { F.q = e.target.value; const p = e.target.selectionStart; telaEquipamentos(); const i = $('#q'); i.focus(); i.setSelectionRange(p, p); };
   for (const [idEl, k] of [['f-cliente', 'cliente'], ['f-tipo', 'tipo'], ['f-setor', 'setor'], ['f-status', 'status'], ['f-prev', 'prev']]) $('#' + idEl).onchange = (e) => { F[k] = e.target.value; if (k === 'cliente') F.setor = ''; telaEquipamentos(); };
 }
@@ -1467,7 +1503,7 @@ async function telaEquipamento(id) {
   const ats = atendimentosDe((m) => (m.equipamentos || []).includes(id));
   const pp = proximaPreventiva(e);
   const c = DB.clientes[e.clienteId];
-  casca(topo(esc(e.nome || nomeTipo(e.tipo)), `<button class="btn" onclick="imprimir()">Imprimir ficha</button><button class="btn" id="b-dup">Duplicar</button><button class="btn" id="b-edit">Editar</button><button class="btn pri" data-novo-atend data-cli="${esc(e.clienteId)}" data-eqs="${esc(id)}" data-tipo="Manutenção preventiva">+ Registrar manutenção</button>`,
+  casca(topo(esc(e.nome || nomeTipo(e.tipo)), `<button class="btn" onclick="imprimir()">Imprimir ficha</button><button class="btn" id="b-etq">Etiqueta Zebra</button><button class="btn" id="b-dup">Duplicar</button><button class="btn" id="b-edit">Editar</button><button class="btn pri" data-novo-atend data-cli="${esc(e.clienteId)}" data-eqs="${esc(id)}" data-tipo="Manutenção preventiva">+ Registrar manutenção</button>`,
     `${esc(nomeTipo(e.tipo))}${e.codigo ? ' · ' + esc(e.codigo) : ''} · <a href="#cliente-${esc(e.clienteId)}">${esc(c ? c.nome : '?')}</a>`) + `
   <div class="so-impressao"><h2>${esc(cfg().empresa)} — Ficha do equipamento · ${dataBR(hoje())}</h2></div>
   <div class="grade g4">
@@ -1482,6 +1518,7 @@ async function telaEquipamento(id) {
   <p class="suave peq">Cadastrado em ${dataBR((e.criadoEm || '').slice(0, 10))}${e.criadoPor ? ' por ' + esc(e.criadoPor) : ''} · última alteração ${dataBR((e.atualizadoEm || '').slice(0, 10))}${e.atualizadoPor ? ' por ' + esc(e.atualizadoPor) : ''}</p>`);
   ligarComuns();
   $('#b-edit').onclick = () => formEquipamento(e);
+  $('#b-etq').onclick = () => irParaEtiquetas([id], e.clienteId);
   $('#b-dup').onclick = () => {
     const copia = JSON.parse(JSON.stringify(e));
     for (const k of ['id', 'criadoEm', 'criadoPor', 'atualizadoEm', 'atualizadoPor', 'numeroSerie', 'patrimonio', 'ip', 'mac', 'macWifi', 'nomeMaquina', 'acessoRemotoId', 'soChave', 'ultimaPreventivaAnterior', 'contadorAtual', 'dataContador', 'p2p']) delete copia[k];
@@ -1766,6 +1803,9 @@ function telaConfig() {
   </div></div>
   <div class="acoes" style="margin-bottom:20px"><button class="btn pri">Salvar configurações</button></div>
   </form>
+  <div class="card"><h2>Logo das etiquetas Zebra</h2><p class="suave" style="margin-top:-6px">Aparece em todos os modelos de etiqueta que usam a logo padrão. A Zebra imprime só em preto: use uma logo com bom contraste (PNG ou JPG).</p>
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><canvas id="logo-prev" style="border:1px solid var(--borda);border-radius:6px;background:#fff;width:96px;height:96px"></canvas>
+    <label class="btn">Enviar logo<input type="file" accept="image/*" id="logo-arq" hidden></label>${C.logoEtiqueta ? '<button class="btn perigo" id="logo-rem">Voltar à logo RM</button>' : ''}</div></div>
   <div class="card"><h2>Cópia dos dados</h2><p class="suave">O servidor faz um backup automático por dia. Aqui você também pode baixar todos os cadastros (clientes, equipamentos e atendimentos) num arquivo. As senhas do cofre não entram neste arquivo.</p>
     <button class="btn" id="b-exp">Baixar cópia (JSON)</button> <button class="btn" id="b-csv-all">Baixar inventário completo (planilha)</button></div>`);
   $('#f-cfg').onsubmit = async (ev) => {
@@ -1775,12 +1815,713 @@ function telaConfig() {
     for (const k of Object.keys(g)) { d.periodo[k] = Number(el['per-' + k].value) || 0; d.checklist[k] = el['chk-' + k].value.split('\n').map((s) => s.trim()).filter(Boolean); }
     try { await salvar('config', d); toast('Configurações salvas'); render(); } catch (e) { toast(e.message, 1); }
   };
+  const lp = $('#logo-prev');
+  const desenhaLogo = () => { const b = logoBits({ w: 20, h: 20 }, 203); lp.width = b.w; lp.height = b.h; lp.getContext('2d').drawImage(bitsCanvas(b), 0, 0); };
+  window.__etqRedesenhar = desenhaLogo; desenhaLogo();
+  const salvarLogo = async (url) => { await salvar('config', { ...(DB.config.geral || { id: 'geral' }), id: 'geral', logoEtiqueta: url }); toast(url ? 'Logo das etiquetas salva' : 'Logo RM restaurada'); telaConfig(); };
+  $('#logo-arq').onchange = async (ev) => { const f = ev.target.files[0]; if (!f) return; try { await salvarLogo(await reduzirImagem(f, 600)); } catch (er) { toast(er.message, 1); } };
+  const lr = $('#logo-rem'); if (lr) lr.onclick = () => salvarLogo('').catch((er) => toast(er.message, 1));
   $('#b-exp').onclick = () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify({ exportadoEm: new Date().toISOString(), clientes: DB.clientes, equipamentos: DB.equipamentos, manutencoes: DB.manutencoes, config: DB.config }, null, 1)], { type: 'application/json' }));
     a.download = `rminfo-dados-${hoje()}.json`; if (!baixar()) return; a.click();
   };
   $('#b-csv-all').onclick = () => exportarCsv(Object.values(DB.equipamentos).sort((a, b) => nomeCliente(a.clienteId).localeCompare(nomeCliente(b.clienteId), 'pt-BR')));
+}
+
+// ====================================================================
+//  ETIQUETAS ZEBRA — modelos configuráveis, pré-visualização e ZPL
+// ====================================================================
+// Medidas dos modelos em milímetros; a impressora trabalha em pontos (dots): mm × dpi / 25,4.
+// As Zebras usam 8, 12 ou 24 pontos por milímetro (203, 300 e 600 dpi).
+const pontosPorMm = (dpi) => ({ 203: 8, 300: 12, 600: 24 })[Number(dpi)] || Number(dpi) / 25.4;
+const dots = (mm, dpi) => Math.round((Number(mm) || 0) * pontosPorMm(dpi));
+const CAMPOS_ETQ = [
+  ['codigo', 'Código interno'], ['nome', 'Nome do equipamento'], ['tipoNome', 'Tipo de equipamento'], ['marca', 'Marca'], ['modelo', 'Modelo'],
+  ['marcaModelo', 'Marca + modelo'], ['numeroSerie', 'Número de série'], ['patrimonio', 'Patrimônio'], ['partNumber', 'Part number'],
+  ['cliente', 'Cliente'], ['unidade', 'Unidade / filial'], ['setor', 'Setor'], ['local', 'Local / sala'], ['andar', 'Andar'], ['responsavel', 'Usuário / responsável'],
+  ['ip', 'Endereço IP'], ['mac', 'MAC'], ['nomeMaquina', 'Hostname'], ['so', 'Sistema operacional'], ['processador', 'Processador'], ['memoria', 'Memória RAM'],
+  ['dataAquisicao', 'Data de compra'], ['garantiaAte', 'Garantia até'], ['proxPrev', 'Próxima preventiva'], ['empresa', 'Nome da empresa'], ['hoje', 'Data da impressão'],
+];
+const nomeCampoEtq = (k) => (CAMPOS_ETQ.find((c) => c[0] === k) || [, k])[1];
+function campoEquip(e, k) {
+  if (k === 'empresa') return cfg().empresa;
+  if (k === 'hoje') return dataBR(hoje());
+  if (!e) return '';
+  switch (k) {
+    case 'tipoNome': return nomeTipo(e.tipo);
+    case 'marcaModelo': return [e.marca, e.modelo].filter(Boolean).join(' ');
+    case 'cliente': return DB.clientes[e.clienteId] ? DB.clientes[e.clienteId].nome : '';
+    case 'memoria': return e.memoriaTotal ? `${e.memoriaTotal} GB${e.memoriaTipo ? ' ' + e.memoriaTipo : ''}` : '';
+    case 'dataAquisicao': case 'garantiaAte': return dataBR(e[k]);
+    case 'proxPrev': return dataBR(proximaPreventiva(e).data);
+    default: return e[k] == null ? '' : String(e[k]);
+  }
+}
+// valor de um elemento: dado do equipamento, texto fixo ou campo livre preenchido na impressão
+function valorEtq(el, ctx) {
+  let v;
+  if (el.origem === 'fixo') return String(el.valor || '');
+  if (el.origem === 'livre') v = (ctx.livres || {})[el.valor];
+  else v = ctx.avulso ? ctx.avulso[el.valor] : campoEquip(ctx.e, el.valor);
+  if (v === undefined || v === null || String(v).trim() === '') return '';
+  return (el.prefixo || '') + String(v).trim();
+}
+const livresDoModelo = (T) => [...new Set(T.elementos.filter((el) => el.origem === 'livre' && el.valor).map((el) => el.valor))];
+const camposDoModelo = (T) => [...new Set(T.elementos.filter((el) => el.origem === 'campo' && el.valor && !['empresa', 'hoje'].includes(el.valor)).map((el) => el.valor))];
+
+// ---- modelos padrão (a logo RM já vem em todos) ----
+const E = (tipo, o) => ({ tipo, x: 2, y: 2, w: 30, h: 8, fonte: 3, origem: 'fixo', valor: '', prefixo: '', linhas: 1, alinhar: 'L', rot: 'N', inverter: false, modulo: 2, legivel: true, tamanho: 4, espessura: 0.3, raio: 0, orient: 'H', ...o });
+const MODELOS_PADRAO = [
+  { id: 'pad-patrimonio', nome: 'Patrimônio 50 × 25 mm', largura: 50, altura: 25, dpi: 203, midia: 'D', escuridao: 0, velocidade: 4, ajusteX: 0, ajusteY: 0, invertida: false, elementos: [
+    E('logo', { x: 2, y: 2, w: 9, h: 9 }),
+    E('texto', { x: 13, y: 2.2, w: 35, fonte: 3, valor: 'RM Informática' }),
+    E('texto', { x: 13, y: 6.3, w: 35, fonte: 2.6, origem: 'campo', valor: 'nome' }),
+    E('codigo', { x: 2.5, y: 12, h: 6, modulo: 1, origem: 'campo', valor: 'numeroSerie' }),
+    E('texto', { x: 2.5, y: 21.5, w: 45, fonte: 2.4, origem: 'campo', valor: 'marcaModelo' }),
+  ] },
+  { id: 'pad-inventario', nome: 'Inventário 100 × 50 mm', largura: 100, altura: 50, dpi: 203, midia: 'D', escuridao: 0, velocidade: 4, ajusteX: 0, ajusteY: 0, invertida: false, elementos: [
+    E('logo', { x: 4, y: 3, w: 14, h: 14 }),
+    E('texto', { x: 21, y: 3.5, w: 75, fonte: 4.5, valor: 'RM Informática' }),
+    E('texto', { x: 21, y: 9.5, w: 75, fonte: 3.2, origem: 'campo', valor: 'cliente' }),
+    E('linha', { x: 4, y: 19, w: 92, espessura: 0.4 }),
+    E('texto', { x: 4, y: 21, w: 64, fonte: 3.2, origem: 'campo', valor: 'nome', prefixo: 'Equip.: ' }),
+    E('texto', { x: 4, y: 25.5, w: 64, fonte: 3, origem: 'campo', valor: 'marcaModelo', prefixo: 'Modelo: ' }),
+    E('texto', { x: 4, y: 30, w: 36, fonte: 3, origem: 'campo', valor: 'setor', prefixo: 'Setor: ' }),
+    E('texto', { x: 40, y: 30, w: 30, fonte: 3, origem: 'livre', valor: 'Corredor', prefixo: 'Corredor: ' }),
+    E('codigo', { x: 4, y: 35, h: 8, modulo: 2, origem: 'campo', valor: 'numeroSerie' }),
+    E('qr', { x: 74, y: 21, tamanho: 4, origem: 'campo', valor: 'codigo' }),
+    E('texto', { x: 72, y: 44, w: 26, fonte: 2.6, alinhar: 'C', origem: 'campo', valor: 'codigo' }),
+  ] },
+  { id: 'pad-corredor', nome: 'Corredor / prateleira 100 × 30 mm', largura: 100, altura: 30, dpi: 203, midia: 'D', escuridao: 0, velocidade: 4, ajusteX: 0, ajusteY: 0, invertida: false, elementos: [
+    E('logo', { x: 3, y: 3, w: 11, h: 11 }),
+    E('texto', { x: 17, y: 2.5, w: 80, fonte: 8, inverter: true, alinhar: 'C', origem: 'livre', valor: 'Corredor', prefixo: 'CORREDOR ' }),
+    E('texto', { x: 17, y: 12.5, w: 80, fonte: 3.5, alinhar: 'C', origem: 'livre', valor: 'Prateleira', prefixo: 'Prateleira ' }),
+    E('codigo', { x: 30, y: 18, h: 7, modulo: 2, origem: 'livre', valor: 'Corredor' }),
+    E('caixa', { x: 1, y: 1, w: 98, h: 28, espessura: 0.4, raio: 1 }),
+  ] },
+];
+function listaModelos() {
+  const salvos = Object.values(DB.etiquetas || {});
+  const ids = new Set(salvos.map((m) => m.id));
+  return [...salvos, ...MODELOS_PADRAO.filter((m) => !ids.has(m.id)).map((m) => ({ ...m, padrao: true }))].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+}
+const modeloPorId = (id) => listaModelos().find((m) => m.id === id);
+const clonar = (o) => JSON.parse(JSON.stringify(o));
+
+// ---- imagens e logo (convertidas para preto e branco, como a Zebra imprime) ----
+const IMGS = {};
+function imagem(src) {
+  if (!IMGS[src]) {
+    const im = new Image();
+    im.onload = () => { if (window.__etqRedesenhar) window.__etqRedesenhar(); };
+    im.src = src; IMGS[src] = im;
+  }
+  return IMGS[src];
+}
+const imagemPronta = (src) => { const im = imagem(src); return im.complete && im.naturalWidth > 0; };
+function esperarImagens(T) {
+  const srcs = T.elementos.filter((el) => el.tipo === 'logo').map((el) => el.imagem || cfg().logoEtiqueta).filter(Boolean);
+  return Promise.all(srcs.map((s) => new Promise((ok) => { const im = imagem(s); if (im.complete) return ok(); im.addEventListener('load', ok, { once: true }); im.addEventListener('error', ok, { once: true }); setTimeout(ok, 3000); })));
+}
+function logoBits(el, dpi) {
+  const w = Math.max(8, dots(el.w, dpi)), h = Math.max(8, dots(el.h, dpi));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
+  const src = el.imagem || cfg().logoEtiqueta;
+  if (src && imagemPronta(src)) {
+    const im = imagem(src), r = Math.min(w / im.naturalWidth, h / im.naturalHeight);
+    const iw = im.naturalWidth * r, ih = im.naturalHeight * r;
+    g.drawImage(im, (w - iw) / 2, (h - ih) / 2, iw, ih);
+  } else {
+    // logo padrão RM
+    const s = Math.min(w, h), x0 = (w - s) / 2, y0 = (h - s) / 2, r = s * 0.2;
+    g.fillStyle = '#000'; g.beginPath(); g.moveTo(x0 + r, y0); g.arcTo(x0 + s, y0, x0 + s, y0 + s, r); g.arcTo(x0 + s, y0 + s, x0, y0 + s, r); g.arcTo(x0, y0 + s, x0, y0, r); g.arcTo(x0, y0, x0 + s, y0, r); g.fill();
+    g.fillStyle = '#fff'; g.font = `bold ${Math.round(s * 0.44)}px Arial, Helvetica, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('RM', w / 2, h / 2 + s * 0.03);
+  }
+  const px = g.getImageData(0, 0, w, h).data, bits = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    const a = px[i * 4 + 3] / 255, lum = (0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]) * a + 255 * (1 - a);
+    bits[i] = lum < 128 ? 1 : 0;
+  }
+  return { w, h, bits };
+}
+function bitsCanvas(b) {
+  const c = document.createElement('canvas'); c.width = b.w; c.height = b.h;
+  const g = c.getContext('2d'), img = g.createImageData(b.w, b.h);
+  for (let i = 0; i < b.bits.length; i++) { const v = b.bits[i] ? 0 : 255; img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255; }
+  g.putImageData(img, 0, 0);
+  return c;
+}
+function bitsGFA(b) {
+  const bpr = Math.ceil(b.w / 8);
+  let hex = '';
+  for (let y = 0; y < b.h; y++) for (let bx = 0; bx < bpr; bx++) {
+    let v = 0;
+    for (let k = 0; k < 8; k++) { const x = bx * 8 + k; v = (v << 1) | (x < b.w ? b.bits[y * b.w + x] : 0); }
+    hex += v.toString(16).padStart(2, '0').toUpperCase();
+  }
+  const total = bpr * b.h;
+  return `^GFA,${total},${total},${bpr},${hex}`;
+}
+function reduzirImagem(arquivo, max) {
+  return new Promise((ok, falha) => {
+    if (!/^image\//.test(arquivo.type)) return falha(new Error('Escolha um arquivo de imagem (PNG ou JPG)'));
+    const r = new FileReader();
+    r.onerror = () => falha(new Error('Não consegui ler a imagem'));
+    r.onload = () => {
+      const im = new Image();
+      im.onerror = () => falha(new Error('Não consegui abrir a imagem'));
+      im.onload = () => {
+        const s = Math.min(1, max / Math.max(im.width, im.height));
+        const c = document.createElement('canvas'); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+        const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+        ok(c.toDataURL('image/png'));
+      };
+      im.src = r.result;
+    };
+    r.readAsDataURL(arquivo);
+  });
+}
+
+// ---- Code 128 (só para desenhar a pré-visualização; a impressora gera o código de verdade) ----
+const C128 = '212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112'.split(' ');
+function code128(txt) {
+  const vals = [...String(txt)].map((ch) => { const c = ch.charCodeAt(0); return c >= 32 && c <= 126 ? c - 32 : 31; });
+  let soma = 104;
+  vals.forEach((v, i) => (soma += v * (i + 1)));
+  return [104, ...vals, soma % 103, 106].map((v) => C128[v]).join('').split('').map(Number);
+}
+
+// ---- geometria de cada elemento (em pontos), usada na pré-visualização e para arrastar ----
+function medidas(el, T, v) {
+  const dpi = T.dpi;
+  if (el.tipo === 'texto') return { w: dots(el.w, dpi), h: dots(el.fonte, dpi) * (Number(el.linhas) || 1) };
+  if (el.tipo === 'codigo') {
+    const mod = Number(el.modulo) || 2, bh = dots(el.h, dpi);
+    const w = code128(v || '0000000000').reduce((a, b) => a + b, 0) * mod;
+    return { w, h: bh + (el.legivel ? Math.max(14, mod * 10) + 4 : 0), bh, mod };
+  }
+  if (el.tipo === 'qr') { const n = qrModulos(v); return { w: n * (Number(el.tamanho) || 4), h: n * (Number(el.tamanho) || 4) }; }
+  if (el.tipo === 'linha') { const t = Math.max(1, dots(el.espessura, dpi)); return el.orient === 'V' ? { w: t, h: dots(el.w, dpi) } : { w: dots(el.w, dpi), h: t }; }
+  return { w: dots(el.w, dpi), h: dots(el.h, dpi) };
+}
+function qrMatriz(v) {
+  try { if (window.qrcode) { const q = window.qrcode(0, 'M'); q.addData(String(v || ' ')); q.make(); return q; } } catch {}
+  return null;
+}
+function qrModulos(v) { const q = qrMatriz(v); return q ? q.getModuleCount() : 25; }
+const girada = (rot) => rot === 'R' || rot === 'B';
+
+function desenharEtiqueta(canvas, T, ctx, opc = {}) {
+  const dpi = T.dpi, W = dots(T.largura, dpi), H = dots(T.altura, dpi);
+  canvas.width = W; canvas.height = H;
+  const g = canvas.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+  const caixas = [];
+  T.elementos.forEach((el, i) => {
+    const x = dots(el.x, dpi), y = dots(el.y, dpi);
+    let v = el.tipo === 'texto' || el.tipo === 'codigo' || el.tipo === 'qr' ? valorEtq(el, ctx) : '';
+    const vazio = !v && opc.exemploVazio && ['texto', 'codigo', 'qr'].includes(el.tipo);
+    if (vazio) v = el.origem === 'livre' ? (el.prefixo || '') + '‹' + el.valor + '›' : el.origem === 'campo' ? (el.prefixo || '') + '‹' + nomeCampoEtq(el.valor) + '›' : '';
+    const m = medidas(el, T, v);
+    const bw = girada(el.rot) ? m.h : m.w, bh = girada(el.rot) ? m.w : m.h;
+    caixas[i] = { x, y, w: Math.max(bw, 6), h: Math.max(bh, 6) };
+    if (!v && ['texto', 'codigo', 'qr'].includes(el.tipo)) return;
+    g.save();
+    g.fillStyle = g.strokeStyle = vazio ? '#8a94a6' : '#000';
+    if (['texto', 'codigo'].includes(el.tipo)) {
+      if (el.rot === 'R') { g.translate(x + m.h, y); g.rotate(Math.PI / 2); }
+      else if (el.rot === 'I') { g.translate(x + m.w, y + m.h); g.rotate(Math.PI); }
+      else if (el.rot === 'B') { g.translate(x, y + m.w); g.rotate(-Math.PI / 2); }
+      else g.translate(x, y);
+    } else g.translate(x, y);
+    if (el.tipo === 'texto') {
+      const fh = dots(el.fonte, dpi), linhas = Number(el.linhas) || 1;
+      if (el.inverter) { g.fillRect(0, 0, m.w, m.h); g.fillStyle = '#fff'; }
+      g.font = `bold ${fh}px "Arial Narrow", Arial, Helvetica, sans-serif`;
+      g.textBaseline = 'top';
+      const cond = 0.86, larg = (s) => g.measureText(s).width * cond;
+      const out = [];
+      let atual = '';
+      for (const p of v.split(/\s+/)) {
+        const t = atual ? atual + ' ' + p : p;
+        if (larg(t) <= m.w || !atual) atual = t; else { out.push(atual); atual = p; }
+      }
+      if (atual) out.push(atual);
+      out.slice(0, linhas).forEach((ln, k) => {
+        const lw = Math.min(larg(ln), m.w);
+        const dx = el.alinhar === 'C' ? (m.w - lw) / 2 : el.alinhar === 'R' ? m.w - lw : 0;
+        g.save(); g.translate(dx, k * fh + fh * 0.06); g.scale(cond, 1); g.fillText(ln, 0, 0, m.w / cond); g.restore();
+      });
+    } else if (el.tipo === 'codigo') {
+      let cx = 0;
+      code128(v).forEach((wd, k) => { if (k % 2 === 0) g.fillRect(cx, 0, wd * m.mod, m.bh); cx += wd * m.mod; });
+      if (el.legivel) { const th = Math.max(14, m.mod * 10); g.font = `${th}px Arial, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'top'; g.fillText(v, m.w / 2, m.bh + 3, m.w); }
+    } else if (el.tipo === 'qr') {
+      const q = qrMatriz(v), mag = Number(el.tamanho) || 4;
+      if (q) { const n = q.getModuleCount(); for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) g.fillRect(c * mag, r * mag, mag, mag); }
+      else { // QR ilustrativo (a impressora gera o verdadeiro)
+        const n = 25, f = (cx, cy) => { g.fillRect(cx * mag, cy * mag, 7 * mag, 7 * mag); g.fillStyle = '#fff'; g.fillRect((cx + 1) * mag, (cy + 1) * mag, 5 * mag, 5 * mag); g.fillStyle = '#000'; g.fillRect((cx + 2) * mag, (cy + 2) * mag, 3 * mag, 3 * mag); };
+        f(0, 0); f(n - 7, 0); f(0, n - 7);
+        let s = 7; for (const ch of v) s = (s * 31 + ch.charCodeAt(0)) >>> 0;
+        for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) { if ((r < 8 && (c < 8 || c > n - 9)) || (r > n - 9 && c < 8)) continue; s = (s * 1103515245 + 12345) >>> 0; if (s & 0x10000) g.fillRect(c * mag, r * mag, mag, mag); }
+      }
+    } else if (el.tipo === 'logo') {
+      g.drawImage(bitsCanvas(logoBits(el, dpi)), 0, 0);
+    } else if (el.tipo === 'linha') {
+      g.fillRect(0, 0, m.w, m.h);
+    } else if (el.tipo === 'caixa') {
+      const t = Math.max(1, dots(el.espessura, dpi)), r = Math.min(Number(el.raio) || 0, 8) / 8 * Math.min(m.w, m.h) / 2;
+      g.lineWidth = t; g.beginPath();
+      if (g.roundRect) g.roundRect(t / 2, t / 2, m.w - t, m.h - t, r); else g.rect(t / 2, t / 2, m.w - t, m.h - t);
+      g.stroke();
+    }
+    g.restore();
+  });
+  if (opc.sel != null && caixas[opc.sel]) {
+    const b = caixas[opc.sel];
+    g.save(); g.strokeStyle = '#1d4ed8'; g.lineWidth = Math.max(2, W / 300); g.setLineDash([6, 4]); g.strokeRect(b.x - 2, b.y - 2, b.w + 4, b.h + 4); g.restore();
+  }
+  return caixas;
+}
+
+// ---- ZPL ----
+const zplTexto = (s) => String(s).replace(/_/g, '_5F').replace(/\^/g, '_5E').replace(/~/g, '_7E');
+function gerarZPL(T, ctxs, copias = 1) {
+  const dpi = T.dpi, partes = [];
+  for (const ctx of ctxs) {
+    const z = ['^XA', '^CI28', `^PW${dots(T.largura, dpi)}`, `^LL${dots(T.altura, dpi)}`, `^LH${dots(T.ajusteX, dpi)},${dots(T.ajusteY, dpi)}`,
+      `^MD${Math.max(-30, Math.min(30, Number(T.escuridao) || 0))}`, `^PR${Math.max(1, Math.min(14, Number(T.velocidade) || 4))}`, `^MT${T.midia === 'T' ? 'T' : 'D'}`, `^PO${T.invertida ? 'I' : 'N'}`];
+    for (const el of T.elementos) {
+      const x = dots(el.x, dpi), y = dots(el.y, dpi), rot = ['N', 'R', 'I', 'B'].includes(el.rot) ? el.rot : 'N';
+      if (el.tipo === 'texto') {
+        const v = valorEtq(el, ctx); if (!v) continue;
+        const fh = Math.max(10, dots(el.fonte, dpi)), lin = Math.max(1, Number(el.linhas) || 1), w = dots(el.w, dpi);
+        if (el.inverter) { const bw = girada(rot) ? fh * lin : w, bh = girada(rot) ? w : fh * lin; z.push(`^FO${x},${y}^GB${bw},${bh},${Math.min(bw, bh)}^FS`); }
+        z.push(`^FO${x},${y}^A0${rot},${fh},${fh}^FB${w},${lin},0,${['L', 'C', 'R'].includes(el.alinhar) ? el.alinhar : 'L'},0${el.inverter ? '^FR' : ''}^FH_^FD${zplTexto(v)}^FS`);
+      } else if (el.tipo === 'codigo') {
+        const v = valorEtq(el, ctx); if (!v) continue;
+        z.push(`^FO${x},${y}^BY${Math.max(1, Math.min(10, Number(el.modulo) || 2))},3^BC${rot},${Math.max(10, dots(el.h, dpi))},${el.legivel ? 'Y' : 'N'},N,N^FH_^FD${zplTexto(v)}^FS`);
+      } else if (el.tipo === 'qr') {
+        const v = valorEtq(el, ctx); if (!v) continue;
+        z.push(`^FO${x},${y}^BQN,2,${Math.max(1, Math.min(10, Number(el.tamanho) || 4))}^FH_^FDMA,${zplTexto(v)}^FS`);
+      } else if (el.tipo === 'logo') {
+        z.push(`^FO${x},${y}${bitsGFA(logoBits(el, dpi))}^FS`);
+      } else if (el.tipo === 'linha') {
+        const t = Math.max(1, dots(el.espessura, dpi)), c = Math.max(t, dots(el.w, dpi));
+        z.push(el.orient === 'V' ? `^FO${x},${y}^GB${t},${c},${t}^FS` : `^FO${x},${y}^GB${c},${t},${t}^FS`);
+      } else if (el.tipo === 'caixa') {
+        const t = Math.max(1, dots(el.espessura, dpi));
+        z.push(`^FO${x},${y}^GB${Math.max(t, dots(el.w, dpi))},${Math.max(t, dots(el.h, dpi))},${t},B,${Math.max(0, Math.min(8, Number(el.raio) || 0))}^FS`);
+      }
+    }
+    z.push(`^PQ${Math.max(1, Number(copias) || 1)},0,1,Y`, '^XZ');
+    partes.push(z.join('\n'));
+  }
+  return partes.join('\n');
+}
+
+// ---- envio para a impressora ----
+async function zebraBrowserPrint(zpl) {
+  const bases = location.protocol === 'https:' ? ['https://127.0.0.1:9101'] : ['http://127.0.0.1:9100', 'https://127.0.0.1:9101'];
+  for (const base of bases) {
+    let dev;
+    try {
+      const r = await fetch(base + '/default?type=printer');
+      if (!r.ok) continue;
+      const t = await r.text();
+      if (!t.trim()) throw new Error('O Zebra Browser Print está aberto, mas não tem impressora padrão. Escolha a Zebra nas configurações dele.');
+      dev = JSON.parse(t);
+    } catch (e) { if (e.message.startsWith('O Zebra')) throw e; continue; }
+    const w = await fetch(base + '/write', { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify({ device: dev, data: zpl }) });
+    if (!w.ok) throw new Error('A Zebra recusou a impressão (' + w.status + ').');
+    return dev.name || 'Zebra';
+  }
+  throw new Error('Não encontrei o Zebra Browser Print neste computador. Instale o programa gratuito da Zebra (para impressoras USB) ou use a opção "Impressora na rede".');
+}
+const PREF_ZEBRA = (() => { try { return JSON.parse(localStorage.getItem('rm-zebra')) || {}; } catch { return {}; } })();
+const guardarPrefZebra = () => { try { localStorage.setItem('rm-zebra', JSON.stringify(PREF_ZEBRA)); } catch {} };
+
+// ---- estado da tela de impressão ----
+const ETQ = { modelo: '', modo: 'equip', sel: new Set(), livres: {}, porItem: {}, avulso: {}, copias: 1, previa: 0, filtro: { cliente: '', tipo: '', setor: '', q: '' } };
+function irParaEtiquetas(ids, cliente) {
+  ETQ.modo = 'equip'; ETQ.sel = new Set(ids); ETQ.previa = 0;
+  ETQ.filtro = { cliente: cliente || '', tipo: '', setor: '', q: '' };
+  telaEtiquetas.aba = 'imprimir';
+  location.hash = 'etiquetas';
+}
+function contextosImpressao() {
+  if (ETQ.modo === 'avulsa') return [{ avulso: ETQ.avulso, livres: ETQ.livres }];
+  return equipsEtq(true).filter((e) => ETQ.sel.has(e.id)).map((e) => {
+    const proprios = Object.fromEntries(Object.entries(ETQ.porItem[e.id] || {}).filter(([, v]) => String(v).trim()));
+    return { e, livres: { ...ETQ.livres, ...proprios } };
+  });
+}
+function equipsEtq(todos) {
+  const F = ETQ.filtro, q = norm(F.q);
+  return Object.values(DB.equipamentos).filter((e) => (todos && ETQ.sel.has(e.id)) || ((!F.cliente || e.clienteId === F.cliente) && (!F.tipo || e.tipo === F.tipo) && (!F.setor || e.setor === F.setor)
+    && (!q || norm([e.nome, e.codigo, e.marca, e.modelo, e.numeroSerie, e.patrimonio, e.setor, e.local, nomeCliente(e.clienteId)].join(' ')).includes(q))))
+    .sort((a, b) => nomeCliente(a.clienteId).localeCompare(nomeCliente(b.clienteId), 'pt-BR') || (a.codigo || '').localeCompare(b.codigo || ''));
+}
+
+// ----- tela: Etiquetas Zebra -----
+function telaEtiquetas() {
+  const aba = telaEtiquetas.aba || 'imprimir';
+  const modelos = listaModelos();
+  if (!modeloPorId(ETQ.modelo)) ETQ.modelo = (modelos.find((m) => m.id === 'pad-patrimonio') || modelos[0]).id;
+  casca(topo('Etiquetas Zebra', `<button class="btn" id="b-novo-mod">+ Novo modelo</button>`, 'Etiquetas de patrimônio, inventário e localização para impressoras Zebra') + `
+  <div class="abas"><button data-aba="imprimir" class="${aba === 'imprimir' ? 'ativo' : ''}">Imprimir</button><button data-aba="modelos" class="${aba === 'modelos' ? 'ativo' : ''}">Modelos salvos (${modelos.length})</button></div>
+  <div id="etq-area"></div>`);
+  $$('[data-aba]').forEach((b) => (b.onclick = () => { telaEtiquetas.aba = b.dataset.aba; telaEtiquetas(); }));
+  $('#b-novo-mod').onclick = () => { telaModelo.novo = { id: '', nome: 'Novo modelo', largura: 60, altura: 40, dpi: 203, midia: 'D', escuridao: 0, velocidade: 4, ajusteX: 0, ajusteY: 0, invertida: false, elementos: [E('logo', { x: 3, y: 3, w: 12, h: 12 }), E('texto', { x: 18, y: 4, w: 39, fonte: 3.5, valor: 'RM Informática' })] }; telaModelo.T = null; telaModelo.id = null; location.hash = 'modelo-novo'; };
+  if (aba === 'modelos') return abaModelos();
+  abaImprimir();
+}
+function abaModelos() {
+  const area = $('#etq-area'), modelos = listaModelos();
+  const exemplo = { e: Object.values(DB.equipamentos)[0] || null, livres: { Corredor: 'A-03', Prateleira: '2' } };
+  area.innerHTML = `<div class="modelos-grade">${modelos.map((m) => `<div class="card modelo-card">
+    <div class="modelo-prev"><canvas data-prev="${esc(m.id)}"></canvas></div>
+    <div><b>${esc(m.nome)}</b> ${m.padrao ? '<span class="tag">padrão</span>' : '<span class="tag azul">salvo</span>'}<div class="suave peq">${esc(m.largura)} × ${esc(m.altura)} mm · ${esc(m.dpi)} dpi · ${m.elementos.length} elementos</div></div>
+    <div class="acoes"><button class="btn peq pri" data-usar="${esc(m.id)}">Usar</button><a class="btn peq" href="#modelo-${esc(m.id)}">Editar</a><button class="btn peq" data-dup="${esc(m.id)}">Duplicar</button>${m.padrao ? '' : `<button class="btn peq perigo" data-apagar="${esc(m.id)}">${MODELOS_PADRAO.some((p) => p.id === m.id) ? 'Voltar ao padrão' : 'Apagar'}</button>`}</div>
+  </div>`).join('')}</div>
+  <p class="suave peq">Os modelos "padrão" já vêm com o sistema. Ao editar e salvar um deles, a sua versão passa a valer no lugar.</p>`;
+  const desenhar = () => $$('[data-prev]', area).forEach((c) => desenharEtiqueta(c, modeloPorId(c.dataset.prev), exemplo, { exemploVazio: true }));
+  window.__etqRedesenhar = desenhar; desenhar();
+  area.onclick = async (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    try {
+      if (b.dataset.usar) { ETQ.modelo = b.dataset.usar; telaEtiquetas.aba = 'imprimir'; telaEtiquetas(); }
+      if (b.dataset.dup) { const m = clonar(modeloPorId(b.dataset.dup)); delete m.padrao; m.id = uid(); m.nome += ' (cópia)'; delete m.criadoEm; await salvar('etiquetas', m); toast('Modelo duplicado'); location.hash = 'modelo-' + m.id; }
+      if (b.dataset.apagar) {
+        const m = modeloPorId(b.dataset.apagar);
+        if (!(await confirmar(`Apagar o modelo "${m.nome}"?`))) return;
+        await apagar('etiquetas', m.id); toast('Modelo apagado'); telaEtiquetas();
+      }
+    } catch (e) { toast(e.message, 1); }
+  };
+}
+function abaImprimir() {
+  const area = $('#etq-area'), T = modeloPorId(ETQ.modelo), F = ETQ.filtro;
+  const livres = livresDoModelo(T), campos = camposDoModelo(T);
+  const zebrasRede = Object.values(DB.equipamentos).filter((e) => e.tipo === 'impressora' && e.ip);
+  const metodo = PREF_ZEBRA.metodo || 'rede';
+  area.innerHTML = `<div class="etq-impr">
+    <div class="card etq-config">
+      <div class="campos" style="grid-template-columns:1fr 1fr">
+        <div class="campo l4"><label>Modelo de etiqueta</label><div style="display:flex;gap:6px"><select id="etq-modelo" style="flex:1">${listaModelos().map((m) => `<option value="${esc(m.id)}"${m.id === T.id ? ' selected' : ''}>${esc(m.nome)}</option>`).join('')}</select><a class="btn peq" href="#modelo-${esc(T.id)}" style="align-self:center">Editar</a></div></div>
+        <div class="campo l2"><label>O que imprimir</label><select id="etq-modo"><option value="equip">Equipamentos cadastrados</option><option value="avulsa"${ETQ.modo === 'avulsa' ? ' selected' : ''}>Etiqueta avulsa (digitar os dados)</option></select></div>
+        <div class="campo l2"><label>Cópias de cada etiqueta</label><input type="number" min="1" max="500" id="etq-copias" value="${ETQ.copias}"></div>
+        ${livres.length ? `<div class="campo l4"><h3 style="margin:6px 0 0">Campos preenchidos na impressão</h3>${ETQ.modo === 'equip' ? '<span class="suave peq">Vale para todas as etiquetas. Para mudar só uma, preencha na coluna da tabela abaixo.</span>' : ''}</div>
+          ${livres.map((l) => `<div class="campo l2"><label>${esc(l)}</label><input data-livre="${esc(l)}" value="${esc(ETQ.livres[l] || '')}"></div>`).join('')}` : ''}
+        ${ETQ.modo === 'avulsa' ? `<div class="campo l4"><h3 style="margin:6px 0 0">Dados da etiqueta</h3></div>${campos.map((k) => `<div class="campo l2"><label>${esc(nomeCampoEtq(k))}</label><input data-avulso="${esc(k)}" value="${esc(ETQ.avulso[k] || '')}"></div>`).join('') || '<div class="campo l4 suave peq">Este modelo não usa dados de equipamento.</div>'}` : ''}
+      </div>
+      <h3 style="margin:16px 0 8px">Impressora</h3>
+      <div class="campos" style="grid-template-columns:1fr 1fr">
+        <div class="campo l4"><label>Como enviar</label><select id="etq-metodo">
+          <option value="rede"${metodo === 'rede' ? ' selected' : ''}>Zebra na rede (pelo IP)</option>
+          <option value="browser"${metodo === 'browser' ? ' selected' : ''}>Zebra no USB (Zebra Browser Print)</option>
+          <option value="arquivo"${metodo === 'arquivo' ? ' selected' : ''}>Baixar arquivo .zpl</option></select></div>
+        <div class="campo" data-so-rede><label>IP da Zebra</label><input id="etq-ip" class="mono" list="dl-zebras" placeholder="192.168.0.80" value="${esc(PREF_ZEBRA.ip || '')}"><datalist id="dl-zebras">${zebrasRede.map((e) => `<option value="${esc(e.ip)}">${esc(e.nome || rotuloEquip(e))} — ${esc(nomeCliente(e.clienteId))}</option>`).join('')}</datalist></div>
+        <div class="campo" data-so-rede><label>Porta</label><input id="etq-porta" class="mono" type="number" value="${esc(PREF_ZEBRA.porta || 9100)}"></div>
+        <div class="campo l4 suave peq" id="etq-dica-metodo"></div>
+      </div>
+    </div>
+    <div class="card etq-previa">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0">Pré-visualização</h2><span class="suave peq" id="etq-contagem"></span></div>
+      <div class="etq-tela"><canvas id="etq-canvas"></canvas></div>
+      <div style="display:flex;justify-content:center;align-items:center;gap:8px"><button class="btn peq" id="etq-ant" aria-label="Etiqueta anterior">‹</button><span class="peq" id="etq-pos"></span><button class="btn peq" id="etq-prox" aria-label="Próxima etiqueta">›</button></div>
+      <p class="suave peq" style="text-align:center;margin:6px 0 12px">${esc(T.largura)} × ${esc(T.altura)} mm · ${esc(T.dpi)} dpi. A pré-visualização é aproximada: a fonte e o código de barras saem da própria Zebra.</p>
+      <div class="acoes" style="justify-content:center"><button class="btn" id="etq-ver-zpl">Ver código ZPL</button><button class="btn pri" id="etq-imprimir">Imprimir</button></div>
+    </div>
+  </div>
+  ${ETQ.modo === 'equip' ? `<div class="filtros">
+    <input type="search" id="etq-q" placeholder="Buscar: nome, série, patrimônio, setor..." value="${esc(F.q)}">
+    <select id="etq-cliente"><option value="">Todos os clientes</option>${Object.values(DB.clientes).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map((c) => `<option value="${esc(c.id)}"${c.id === F.cliente ? ' selected' : ''}>${esc(c.nome)}</option>`).join('')}</select>
+    <select id="etq-tipo"><option value="">Todos os tipos</option>${Object.entries(TIPOS).map(([k, v]) => `<option value="${k}"${k === F.tipo ? ' selected' : ''}>${v.nome}</option>`).join('')}</select>
+    <select id="etq-setor"><option value="">Todos os setores</option>${[...new Set(Object.values(DB.equipamentos).filter((e) => !F.cliente || e.clienteId === F.cliente).map((e) => e.setor).filter(Boolean))].sort().map((s) => `<option${s === F.setor ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select>
+  </div><div class="card" style="padding:0" id="etq-tabela"></div>` : ''}`;
+
+  const canvas = $('#etq-canvas');
+  const atualizar = () => {
+    const ctxs = contextosImpressao();
+    ETQ.previa = Math.max(0, Math.min(ETQ.previa, ctxs.length - 1));
+    const ctx = ctxs[ETQ.previa] || { e: null, livres: ETQ.livres };
+    desenharEtiqueta(canvas, T, ctx, { exemploVazio: !ctxs.length });
+    const n = ctxs.length * Math.max(1, ETQ.copias);
+    $('#etq-contagem').textContent = ctxs.length ? `${n} etiqueta${n > 1 ? 's' : ''} para imprimir` : 'Marque os equipamentos na lista abaixo';
+    $('#etq-pos').textContent = ctxs.length ? `${ETQ.previa + 1} de ${ctxs.length}` : '—';
+    $('#etq-ant').disabled = ETQ.previa <= 0; $('#etq-prox').disabled = ETQ.previa >= ctxs.length - 1;
+  };
+  window.__etqRedesenhar = atualizar;
+  const ajustaMetodo = () => {
+    const m = $('#etq-metodo').value;
+    $$('[data-so-rede]', area).forEach((x) => (x.hidden = m !== 'rede'));
+    $('#etq-dica-metodo').textContent = {
+      rede: 'O servidor do sistema manda a etiqueta direto para a Zebra (porta 9100). O servidor precisa estar na mesma rede da impressora.',
+      browser: 'Para Zebra ligada no USB deste computador. Precisa do programa gratuito "Zebra Browser Print" instalado e aberto.',
+      arquivo: 'Baixa o arquivo para enviar pelo Zebra Setup Utilities ou outro programa.',
+    }[m];
+  };
+  ajustaMetodo();
+
+  const tabela = () => {
+    const box = $('#etq-tabela'); if (!box) return;
+    const lista = equipsEtq(false);
+    const todosMarcados = lista.length && lista.every((e) => ETQ.sel.has(e.id));
+    box.innerHTML = lista.length ? `<div class="tabela-wrap"><table><thead><tr><th style="width:34px"><input type="checkbox" id="etq-todos" aria-label="Marcar todos"${todosMarcados ? ' checked' : ''}></th><th>Equipamento</th><th>Nº de série</th><th class="esconde-cel">Cliente</th><th class="esconde-cel">Setor / local</th>${livres.map((l) => `<th>${esc(l)}</th>`).join('')}</tr></thead><tbody>
+      ${lista.map((e) => `<tr><td><input type="checkbox" data-sel="${esc(e.id)}"${ETQ.sel.has(e.id) ? ' checked' : ''} aria-label="Imprimir ${esc(e.nome || '')}"></td><td><b>${esc(e.nome || nomeTipo(e.tipo))}</b><div class="suave peq">${esc(e.codigo || '')} · ${esc([e.marca, e.modelo].filter(Boolean).join(' '))}</div></td>
+        <td class="mono peq">${esc(e.numeroSerie || '')}</td><td class="esconde-cel">${esc(nomeCliente(e.clienteId))}</td><td class="esconde-cel">${esc([e.setor, e.local].filter(Boolean).join(' · '))}</td>
+        ${livres.map((l) => `<td><input class="etq-mini" data-item="${esc(e.id)}" data-livre-item="${esc(l)}" value="${esc((ETQ.porItem[e.id] || {})[l] || '')}" placeholder="${esc(ETQ.livres[l] || '')}" aria-label="${esc(l)}"></td>`).join('')}</tr>`).join('')}
+    </tbody></table></div>` : '<div class="vazio">Nenhum equipamento encontrado com esses filtros.</div>';
+  };
+  tabela(); atualizar();
+
+  area.addEventListener('input', (ev) => {
+    const t = ev.target;
+    if (t.dataset.livre) ETQ.livres[t.dataset.livre] = t.value;
+    else if (t.dataset.avulso) ETQ.avulso[t.dataset.avulso] = t.value;
+    else if (t.dataset.livreItem) { (ETQ.porItem[t.dataset.item] = ETQ.porItem[t.dataset.item] || {})[t.dataset.livreItem] = t.value; ETQ.previa = Math.max(0, contextosImpressao().findIndex((c) => c.e && c.e.id === t.dataset.item)); }
+    else if (t.id === 'etq-copias') ETQ.copias = Math.max(1, Math.min(500, Number(t.value) || 1));
+    else if (t.id === 'etq-q') { F.q = t.value; tabela(); }
+    else return;
+    if (t.dataset.livre) $$(`[data-livre-item="${CSS.escape(t.dataset.livre)}"]`, area).forEach((i) => (i.placeholder = t.value));
+    atualizar();
+  });
+  area.addEventListener('change', (ev) => {
+    const t = ev.target;
+    if (t.id === 'etq-modelo') { ETQ.modelo = t.value; ETQ.previa = 0; return telaEtiquetas(); }
+    if (t.id === 'etq-modo') { ETQ.modo = t.value; ETQ.previa = 0; return telaEtiquetas(); }
+    if (t.id === 'etq-metodo') { PREF_ZEBRA.metodo = t.value; guardarPrefZebra(); return ajustaMetodo(); }
+    if (t.id === 'etq-ip' || t.id === 'etq-porta') { PREF_ZEBRA.ip = $('#etq-ip').value.trim(); PREF_ZEBRA.porta = Number($('#etq-porta').value) || 9100; guardarPrefZebra(); return; }
+    if (t.id === 'etq-cliente') { F.cliente = t.value; F.setor = ''; return telaEtiquetas(); }
+    if (t.id === 'etq-tipo') { F.tipo = t.value; return telaEtiquetas(); }
+    if (t.id === 'etq-setor') { F.setor = t.value; return telaEtiquetas(); }
+    if (t.id === 'etq-todos') { for (const e of equipsEtq(false)) t.checked ? ETQ.sel.add(e.id) : ETQ.sel.delete(e.id); tabela(); }
+    else if (t.dataset.sel) { t.checked ? ETQ.sel.add(t.dataset.sel) : ETQ.sel.delete(t.dataset.sel); if (t.checked) ETQ.previa = contextosImpressao().findIndex((c) => c.e && c.e.id === t.dataset.sel); }
+    else return;
+    atualizar();
+  });
+  $('#etq-ant').onclick = () => { ETQ.previa--; atualizar(); };
+  $('#etq-prox').onclick = () => { ETQ.previa++; atualizar(); };
+  const montar = async () => {
+    const ctxs = contextosImpressao();
+    if (!ctxs.length) throw new Error('Marque pelo menos um equipamento na lista.');
+    await esperarImagens(T);
+    return { zpl: gerarZPL(T, ctxs, ETQ.copias), n: ctxs.length * ETQ.copias };
+  };
+  $('#etq-ver-zpl').onclick = async () => {
+    try {
+      const { zpl } = await montar();
+      const m = modal({ titulo: 'Código ZPL', corpo: `<p class="suave peq" style="margin-top:0">É o comando que a Zebra entende. Dá para conferir colando em labelary.com/viewer.html.</p><textarea class="mono" id="zpl-txt" readonly style="width:100%;min-height:340px;font-size:12px;border:1px solid var(--borda);border-radius:8px;padding:10px">${esc(zpl)}</textarea>`, extraRodape: '<button type="button" class="btn" id="zpl-copiar">Copiar</button>' });
+      $('#zpl-copiar', m.fundo).onclick = async () => { try { await navigator.clipboard.writeText(zpl); toast('Código copiado'); } catch { const ta = $('#zpl-txt', m.fundo); ta.focus(); ta.select(); toast('Selecionei o código: use Ctrl+C para copiar'); } };
+    } catch (e) { toast(e.message, 1); }
+  };
+  $('#etq-imprimir').onclick = async (ev) => {
+    const btn = ev.currentTarget;
+    try {
+      const { zpl, n } = await montar();
+      const m = $('#etq-metodo').value;
+      if (!ONLINE) return toast(`Na demonstração a impressão fica desligada. No sistema instalado, ${n} etiqueta${n > 1 ? 's' : ''} iria${n > 1 ? 'm' : ''} para a Zebra. Use "Ver código ZPL" para ver o que seria enviado.`);
+      btn.disabled = true;
+      if (m === 'rede') {
+        const ip = $('#etq-ip').value.trim();
+        if (!ip) throw new Error('Informe o IP da Zebra');
+        PREF_ZEBRA.ip = ip; PREF_ZEBRA.porta = Number($('#etq-porta').value) || 9100; guardarPrefZebra();
+        await api('POST', '/api/zebra/enviar', { ip, porta: PREF_ZEBRA.porta, zpl });
+        toast(`${n} etiqueta${n > 1 ? 's' : ''} enviada${n > 1 ? 's' : ''} para ${ip}`);
+      } else if (m === 'browser') {
+        const nome = await zebraBrowserPrint(zpl);
+        toast(`${n} etiqueta${n > 1 ? 's' : ''} enviada${n > 1 ? 's' : ''} para ${nome}`);
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([zpl], { type: 'text/plain' }));
+        a.download = `etiquetas-${hoje()}.zpl`; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      }
+    } catch (e) { toast(e.message, 1); }
+    finally { btn.disabled = false; }
+  };
+}
+
+// ----- tela: editor de modelo -----
+const NOMES_ELEM = { texto: 'Texto', codigo: 'Código de barras', qr: 'QR code', logo: 'Logo', linha: 'Linha', caixa: 'Caixa / moldura' };
+function telaModelo(id) {
+  if (telaModelo.id !== id || !telaModelo.T) {
+    const base = id === 'novo' ? telaModelo.novo : modeloPorId(id);
+    if (!base) { location.hash = 'etiquetas'; return; }
+    telaModelo.T = clonar(base); delete telaModelo.T.padrao;
+    telaModelo.id = id; telaModelo.sel = null; telaModelo.sujo = false;
+    telaModelo.amostra = telaModelo.amostra || '';
+  }
+  const T = telaModelo.T;
+  const eqs = Object.values(DB.equipamentos).sort((a, b) => rotuloEquip(a).localeCompare(rotuloEquip(b), 'pt-BR'));
+  casca(topo(esc(T.nome || 'Modelo de etiqueta'), `<a class="btn" href="#etiquetas" id="b-voltar">Voltar</a><button class="btn" id="b-salvar-usar">Salvar e imprimir</button><button class="btn pri" id="b-salvar-mod">Salvar modelo</button>`, 'Arraste os elementos na pré-visualização para posicionar') + `
+  <div class="editor-etq">
+    <div class="editor-lado">
+      <div class="card"><h3>Etiqueta</h3><div class="campos" style="grid-template-columns:1fr 1fr">
+        <div class="campo l4"><label for="mod-nome">Nome do modelo</label><input id="mod-nome" data-tp="nome" value="${esc(T.nome)}"></div>
+        <div class="campo"><label>Largura (mm)</label><input type="number" step="0.5" min="10" data-tp="largura" data-num value="${esc(T.largura)}"></div>
+        <div class="campo"><label>Altura (mm)</label><input type="number" step="0.5" min="5" data-tp="altura" data-num value="${esc(T.altura)}"></div>
+        <div class="campo"><label>Resolução da Zebra</label><select data-tp="dpi" data-num>${[[203, '203 dpi (8 pontos/mm)'], [300, '300 dpi (12 pontos/mm)'], [600, '600 dpi (24 pontos/mm)']].map(([v, l]) => `<option value="${v}"${Number(T.dpi) === v ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+        <div class="campo"><label>Tipo de impressão</label><select data-tp="midia"><option value="D">Térmica direta (sem ribbon)</option><option value="T"${T.midia === 'T' ? ' selected' : ''}>Transferência térmica (com ribbon)</option></select></div>
+        <div class="campo"><label>Escuridão (-30 a 30)</label><input type="number" min="-30" max="30" data-tp="escuridao" data-num value="${esc(T.escuridao ?? 0)}"></div>
+        <div class="campo"><label>Velocidade (pol./s)</label><input type="number" min="1" max="14" data-tp="velocidade" data-num value="${esc(T.velocidade ?? 4)}"></div>
+        <div class="campo"><label>Ajuste horizontal (mm)</label><input type="number" step="0.5" data-tp="ajusteX" data-num value="${esc(T.ajusteX ?? 0)}"></div>
+        <div class="campo"><label>Ajuste vertical (mm)</label><input type="number" step="0.5" data-tp="ajusteY" data-num value="${esc(T.ajusteY ?? 0)}"></div>
+        <div class="campo l4"><label class="chk-linha"><input type="checkbox" data-tp="invertida"${T.invertida ? ' checked' : ''}> Imprimir de cabeça para baixo (180°)</label></div>
+      </div></div>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><h3 style="margin:0">Elementos (${T.elementos.length})</h3>
+        <div class="acoes">${Object.entries(NOMES_ELEM).map(([k, l]) => `<button class="btn peq" data-add-el="${k}">+ ${l}</button>`).join('')}</div></div>
+        <div id="lista-elem">${T.elementos.map((el, i) => htmlElemento(el, i)).join('') || '<div class="vazio">Nenhum elemento. Use os botões acima para adicionar.</div>'}</div>
+      </div>
+    </div>
+    <div class="editor-prev"><div class="card">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><h3 style="margin:0">Pré-visualização</h3>
+        <select id="mod-amostra" aria-label="Dados da pré-visualização"><option value="">Ver com dados de exemplo</option>${eqs.map((e) => `<option value="${esc(e.id)}"${e.id === telaModelo.amostra ? ' selected' : ''}>${esc(rotuloEquip(e))}</option>`).join('')}</select></div>
+      <div class="etq-tela"><canvas id="mod-canvas" style="touch-action:none;cursor:move"></canvas></div>
+      <p class="suave peq" style="margin:4px 0 0">${esc(T.largura)} × ${esc(T.altura)} mm. Clique num elemento para selecionar e arraste para mover. Campos livres aparecem como ‹nome›.</p>
+    </div></div>
+  </div>`);
+  ligarEditor(T);
+}
+function htmlElemento(el, i) {
+  const n = (p, l, step = '0.5', extra = '') => `<div class="campo"><label>${l}</label><input type="number" step="${step}" data-el="${i}" data-p="${p}" data-num value="${esc(el[p] ?? '')}"${extra}></div>`;
+  const sel = (p, l, ops) => `<div class="campo"><label>${l}</label><select data-el="${i}" data-p="${p}">${ops.map(([v, t]) => `<option value="${v}"${String(el[p]) === String(v) ? ' selected' : ''}>${t}</option>`).join('')}</select></div>`;
+  const chk = (p, l) => `<div class="campo"><label class="chk-linha" style="margin-top:18px"><input type="checkbox" data-el="${i}" data-p="${p}"${el[p] ? ' checked' : ''}> ${l}</label></div>`;
+  const rot = sel('rot', 'Rotação', [['N', 'Normal'], ['R', '90°'], ['I', '180°'], ['B', '270°']]);
+  let fonte = '';
+  if (['texto', 'codigo', 'qr'].includes(el.tipo)) {
+    fonte = sel('origem', 'Conteúdo', [['campo', 'Dado do equipamento'], ['fixo', 'Texto fixo'], ['livre', 'Preenchido na impressão']])
+      + (el.origem === 'campo' ? `<div class="campo l2"><label>Qual dado</label><select data-el="${i}" data-p="valor">${CAMPOS_ETQ.map(([k, l]) => `<option value="${k}"${el.valor === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>`
+        : `<div class="campo l2"><label>${el.origem === 'livre' ? 'Nome do campo (ex.: Corredor, Prateleira)' : 'Texto'}</label><input data-el="${i}" data-p="valor" value="${esc(el.valor || '')}"></div>`)
+      + (el.tipo === 'texto' && el.origem !== 'fixo' ? `<div class="campo"><label>Texto antes</label><input data-el="${i}" data-p="prefixo" value="${esc(el.prefixo || '')}" placeholder="Ex.: S/N: "></div>` : '');
+  }
+  const pos = n('x', 'X (mm)') + n('y', 'Y (mm)');
+  const por = {
+    texto: pos + n('w', 'Largura (mm)') + n('fonte', 'Altura da letra (mm)') + n('linhas', 'Máx. de linhas', '1', ' min="1" max="10"') + sel('alinhar', 'Alinhamento', [['L', 'Esquerda'], ['C', 'Centro'], ['R', 'Direita']]) + rot + chk('inverter', 'Branco no preto'),
+    codigo: pos + n('h', 'Altura das barras (mm)') + sel('modulo', 'Largura das barras', [[1, 'Fina (1)'], [2, 'Normal (2)'], [3, 'Larga (3)'], [4, 'Extra larga (4)']]) + rot + chk('legivel', 'Mostrar o texto embaixo'),
+    qr: pos + sel('tamanho', 'Tamanho', [1, 2, 3, 4, 5, 6, 7, 8, 10].map((v) => [v, String(v)])),
+    logo: pos + n('w', 'Largura (mm)') + n('h', 'Altura (mm)') + `<div class="campo l4"><label>Imagem</label><div class="acoes"><label class="btn peq">${el.imagem ? 'Trocar imagem' : 'Usar outra imagem'}<input type="file" accept="image/*" data-img="${i}" hidden></label>${el.imagem ? `<button type="button" class="btn peq" data-img-padrao="${i}">Usar a logo padrão</button>` : '<span class="suave peq" style="align-self:center">Usando a logo padrão das etiquetas</span>'}</div></div>`,
+    linha: pos + n('w', 'Comprimento (mm)') + n('espessura', 'Espessura (mm)', '0.1') + sel('orient', 'Direção', [['H', 'Horizontal'], ['V', 'Vertical']]),
+    caixa: pos + n('w', 'Largura (mm)') + n('h', 'Altura (mm)') + n('espessura', 'Espessura (mm)', '0.1') + sel('raio', 'Cantos', [[0, 'Retos'], [2, 'Pouco arredondados'], [4, 'Arredondados'], [8, 'Bem arredondados']]),
+  }[el.tipo];
+  const resumo = ['texto', 'codigo', 'qr'].includes(el.tipo) ? (el.origem === 'campo' ? nomeCampoEtq(el.valor) : el.origem === 'livre' ? `‹${el.valor || '?'}›` : `“${el.valor || ''}”`) : '';
+  return `<div class="elem${telaModelo.sel === i ? ' elem-sel' : ''}" data-elem="${i}">
+    <div class="elem-topo"><button type="button" class="elem-titulo" data-selecionar="${i}"><b>${i + 1}. ${NOMES_ELEM[el.tipo]}</b> <span class="suave">${esc(resumo)}</span></button>
+      <div class="acoes"><button type="button" class="btn peq" data-mover="${i}" data-dir="-1" aria-label="Subir"${i === 0 ? ' disabled' : ''}>↑</button><button type="button" class="btn peq" data-mover="${i}" data-dir="1" aria-label="Descer"${i === telaModelo.T.elementos.length - 1 ? ' disabled' : ''}>↓</button><button type="button" class="btn peq" data-duplicar="${i}">Duplicar</button><button type="button" class="btn peq perigo" data-remover="${i}" aria-label="Remover">×</button></div></div>
+    <div class="campos">${fonte}${por}</div></div>`;
+}
+function ligarEditor(T) {
+  const canvas = $('#mod-canvas'), lado = $('.editor-lado');
+  let caixas = [];
+  const amostra = () => {
+    const e = DB.equipamentos[telaModelo.amostra];
+    if (e) return { e, livres: { Corredor: 'A-03', Prateleira: '2', Posição: '15' } };
+    return { avulso: { codigo: 'EQ-0001', nome: 'PC Recepção 01', tipoNome: 'Computador', marca: 'Dell', modelo: 'OptiPlex 3080', marcaModelo: 'Dell OptiPlex 3080', numeroSerie: '7XK2F93', patrimonio: 'PAT-0001',
+      cliente: 'Cliente Exemplo Ltda', setor: 'Recepção', local: 'Balcão', andar: '1º', responsavel: 'Maria', ip: '192.168.0.20', mac: 'B0:7B:25:1A:44:C2', nomeMaquina: 'PC-RECEPCAO01', so: 'Windows 11 Pro',
+      processador: 'Intel Core i5-10500', memoria: '16 GB DDR4', dataAquisicao: '10/03/2025', garantiaAte: '10/03/2028', proxPrev: dataBR(somaDias(hoje(), 90)), empresa: cfg().empresa, hoje: dataBR(hoje()) },
+      livres: {} };
+  };
+  const desenhar = () => { caixas = desenharEtiqueta(canvas, T, amostra(), { sel: telaModelo.sel, exemploVazio: true }); };
+  window.__etqRedesenhar = desenhar;
+  desenhar();
+  const sujar = () => { telaModelo.sujo = true; };
+  const recarregar = () => { const y = window.scrollY; telaModelo(telaModelo.id); window.scrollTo(0, y); };
+  const selecionar = (i, rolar) => {
+    telaModelo.sel = i;
+    $$('.elem', lado).forEach((d) => d.classList.toggle('elem-sel', Number(d.dataset.elem) === i));
+    if (rolar && i != null) { const d = $(`[data-elem="${i}"]`, lado); if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+    desenhar();
+  };
+  lado.addEventListener('input', (ev) => {
+    const t = ev.target;
+    const v = t.type === 'checkbox' ? t.checked : t.dataset.num !== undefined ? (t.value === '' ? '' : Number(t.value)) : t.value;
+    if (t.dataset.tp) { T[t.dataset.tp] = v; if (t.dataset.tp === 'nome') $('.topo h1').textContent = v || 'Modelo de etiqueta'; }
+    else if (t.dataset.el !== undefined) { T.elementos[Number(t.dataset.el)][t.dataset.p] = t.dataset.p === 'modulo' || t.dataset.p === 'tamanho' || t.dataset.p === 'raio' ? Number(v) : v; }
+    else return;
+    sujar(); desenhar();
+  });
+  lado.addEventListener('change', async (ev) => {
+    const t = ev.target;
+    if (t.dataset.p === 'origem') {
+      const el = T.elementos[Number(t.dataset.el)];
+      el.valor = t.value === 'campo' ? 'numeroSerie' : t.value === 'livre' ? 'Corredor' : (el.tipo === 'texto' ? 'Texto' : '123456');
+      return recarregar();
+    }
+    if (t.dataset.img !== undefined && t.files[0]) {
+      try { T.elementos[Number(t.dataset.img)].imagem = await reduzirImagem(t.files[0], 600); sujar(); recarregar(); } catch (e) { toast(e.message, 1); }
+    }
+    if (['largura', 'altura', 'dpi'].includes(t.dataset.tp) || (t.dataset.p === 'valor' && t.tagName === 'SELECT')) { const y = window.scrollY; const foco = t.dataset.tp; telaModelo(telaModelo.id); window.scrollTo(0, y); if (foco) { const i = $(`[data-tp="${foco}"]`); if (i) i.focus(); } }
+  });
+  lado.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    const L = T.elementos;
+    if (b.dataset.addEl) {
+      const tipo = b.dataset.addEl, cx = Math.max(1, T.largura / 2 - 10), cy = Math.max(1, T.altura / 2 - 4);
+      const novo = { texto: E('texto', { x: 2, y: cy, w: Math.max(10, T.largura - 4), fonte: 3, origem: 'campo', valor: 'modelo' }), codigo: E('codigo', { x: 2, y: cy, h: 8, origem: 'campo', valor: 'numeroSerie' }),
+        qr: E('qr', { x: cx, y: 2, origem: 'campo', valor: 'codigo' }), logo: E('logo', { x: 2, y: 2, w: 10, h: 10 }), linha: E('linha', { x: 2, y: cy, w: Math.max(5, T.largura - 4) }),
+        caixa: E('caixa', { x: 1, y: 1, w: Math.max(5, T.largura - 2), h: Math.max(5, T.altura - 2) }) }[tipo];
+      L.push(novo); telaModelo.sel = L.length - 1; sujar(); recarregar();
+      const d = $(`[data-elem="${L.length - 1}"]`); if (d) d.scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    if (b.dataset.selecionar !== undefined) return selecionar(Number(b.dataset.selecionar));
+    if (b.dataset.remover !== undefined) { L.splice(Number(b.dataset.remover), 1); telaModelo.sel = null; sujar(); return recarregar(); }
+    if (b.dataset.duplicar !== undefined) { const i = Number(b.dataset.duplicar), c = clonar(L[i]); c.x = Number(c.x) + 2; c.y = Number(c.y) + 2; L.splice(i + 1, 0, c); telaModelo.sel = i + 1; sujar(); return recarregar(); }
+    if (b.dataset.mover !== undefined) { const i = Number(b.dataset.mover), j = i + Number(b.dataset.dir); if (j < 0 || j >= L.length) return; [L[i], L[j]] = [L[j], L[i]]; telaModelo.sel = j; sujar(); return recarregar(); }
+    if (b.dataset.imgPadrao !== undefined) { delete L[Number(b.dataset.imgPadrao)].imagem; sujar(); return recarregar(); }
+  });
+  $('#mod-amostra').onchange = (ev) => { telaModelo.amostra = ev.target.value; desenhar(); };
+
+  // arrastar na pré-visualização
+  let arrasto = null;
+  const ponto = (ev) => { const r = canvas.getBoundingClientRect(); return { x: (ev.clientX - r.left) * canvas.width / r.width, y: (ev.clientY - r.top) * canvas.height / r.height }; };
+  canvas.addEventListener('pointerdown', (ev) => {
+    const p = ponto(ev);
+    let i = -1;
+    for (let k = caixas.length - 1; k >= 0; k--) { const b = caixas[k]; if (b && p.x >= b.x - 4 && p.x <= b.x + b.w + 4 && p.y >= b.y - 4 && p.y <= b.y + b.h + 4) { i = k; if (T.elementos[k].tipo !== 'caixa') break; } }
+    if (i < 0) return selecionar(null);
+    canvas.setPointerCapture(ev.pointerId);
+    arrasto = { i, p, x: Number(T.elementos[i].x) || 0, y: Number(T.elementos[i].y) || 0, moveu: false };
+    selecionar(i);
+  });
+  canvas.addEventListener('pointermove', (ev) => {
+    if (!arrasto) return;
+    const p = ponto(ev), pmm = pontosPorMm(T.dpi), el = T.elementos[arrasto.i];
+    el.x = Math.max(0, Math.round((arrasto.x + (p.x - arrasto.p.x) / pmm) * 2) / 2);
+    el.y = Math.max(0, Math.round((arrasto.y + (p.y - arrasto.p.y) / pmm) * 2) / 2);
+    arrasto.moveu = true; sujar();
+    const ix = $(`[data-el="${arrasto.i}"][data-p="x"]`, lado), iy = $(`[data-el="${arrasto.i}"][data-p="y"]`, lado);
+    if (ix) ix.value = el.x; if (iy) iy.value = el.y;
+    desenhar();
+  });
+  const soltar = () => { if (arrasto && !arrasto.moveu) selecionar(arrasto.i, true); arrasto = null; };
+  canvas.addEventListener('pointerup', soltar); canvas.addEventListener('pointercancel', soltar);
+
+  const gravar = async (depois) => {
+    if (!String(T.nome || '').trim()) { toast('Dê um nome ao modelo', 1); $('#mod-nome').focus(); return; }
+    if (!(Number(T.largura) > 0) || !(Number(T.altura) > 0)) { toast('Informe a largura e a altura da etiqueta', 1); return; }
+    try {
+      const novo = !T.id;
+      if (novo) T.id = uid();
+      const s = await salvar('etiquetas', clonar(T));
+      telaModelo.sujo = false; telaModelo.T = clonar(s); telaModelo.id = s.id;
+      toast('Modelo salvo');
+      if (depois === 'usar') { ETQ.modelo = s.id; telaEtiquetas.aba = 'imprimir'; location.hash = 'etiquetas'; }
+      else if (novo) location.hash = 'modelo-' + s.id;
+    } catch (e) { toast(e.message, 1); }
+  };
+  $('#b-salvar-mod').onclick = () => gravar();
+  $('#b-salvar-usar').onclick = () => gravar('usar');
+  $('#b-voltar').onclick = async (ev) => {
+    ev.preventDefault();
+    if (telaModelo.sujo && !(await confirmar('Sair sem salvar as alterações deste modelo?'))) return;
+    telaModelo.T = null; telaModelo.id = null; telaEtiquetas.aba = 'modelos'; location.hash = 'etiquetas';
+  };
 }
 
 // ---------------- início ----------------

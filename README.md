@@ -14,6 +14,10 @@ Sistema para inventariar os equipamentos dos clientes, controlar as visitas peri
 - **Atendimentos e manutenções**: visita periódica, preventiva, corretiva, instalação, remoto. Para cada atendimento: equipamentos atendidos, checklist, o que foi feito, peças trocadas, leitura do contador das impressoras, pendências para a próxima visita, valor cobrado e relatório para imprimir com espaço para assinatura.
 - **Avisos**: o painel mostra as visitas e as preventivas atrasadas e as que vencem nos próximos dias (15 por padrão), os agendamentos, os atendimentos em aberto e as garantias e antivírus vencendo. Também pode avisar pelo navegador.
 - **Senhas (cofre)**: senhas de Wi-Fi (SSID), roteadores, DVRs, sistemas, e-mails e servidores, ligadas ao cliente e ao equipamento. Ficam **criptografadas** no servidor (AES-256), só aparecem quando alguém clica em "mostrar" ou "copiar", e **cada visualização fica registrada** (quem, quando e de qual IP).
+- **Etiquetas Zebra**: modelos de etiqueta 100% configuráveis. Você escolhe o tamanho (mm), a resolução (203/300/600 dpi), o tipo de impressão (térmica direta ou com ribbon), a escuridão e a velocidade, e monta a etiqueta com texto, código de barras, QR code, logo, linhas e caixas, arrastando os elementos na pré-visualização. Cada elemento mostra um dado do equipamento (número de série, modelo, marca, patrimônio, setor, IP...), um texto fixo ou um **campo preenchido na hora de imprimir** (corredor, prateleira, posição, ponto de rede...). Os modelos ficam salvos para usar de novo. A logo da RM já vem nos modelos padrão; em Configurações dá para trocar pela logo oficial. Para imprimir, marque os equipamentos (ou digite uma etiqueta avulsa) e envie:
+  - **Zebra na rede**: o servidor manda direto para o IP da impressora (porta 9100). O servidor precisa estar na mesma rede da Zebra.
+  - **Zebra no USB**: pelo programa gratuito Zebra Browser Print instalado no computador.
+  - **Arquivo .zpl** ou **código ZPL** para copiar.
 - **Usuários**: administrador e técnico. O técnico só vê o cofre de senhas se o administrador liberar.
 - **Planilha**: exporta o inventário (com todos os campos) para Excel.
 

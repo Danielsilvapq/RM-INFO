@@ -8,6 +8,7 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const net = require('node:net');
 const { DatabaseSync } = require('node:sqlite');
 
 const PORT = Number(process.env.PORT) || 3300;
@@ -151,7 +152,7 @@ if (!db.prepare('SELECT COUNT(*) n FROM usuarios').get().n) {
 }
 
 // ---------- dados do sistema ----------
-const COLECOES = ['clientes', 'equipamentos', 'manutencoes', 'config'];
+const COLECOES = ['clientes', 'equipamentos', 'manutencoes', 'etiquetas', 'config'];
 const ehAdmin = (u) => u.perfil === 'admin';
 const podeSenhas = (u) => ehAdmin(u) || !!u.pode_senhas;
 const podeGravar = (u, c) => ehAdmin(u) || c !== 'config';
@@ -322,6 +323,22 @@ rota('POST', '/api/credenciais/:id/revelar', ({ req, params, user }) => {
   logSenha(req, user, atual, 'visualizou');
   return { senha };
 }, { senhas: true });
+// ---------- impressão nas Zebras pela rede (porta RAW 9100) ----------
+// Só aceita IPs de rede local, para o servidor não ser usado para mandar dados a outros lugares.
+const ipLocal = (ip) => /^(10\.\d{1,3}|192\.168|172\.(1[6-9]|2\d|3[01]))\.\d{1,3}\.\d{1,3}$/.test(ip) && ip.split('.').every((n) => Number(n) <= 255);
+rota('POST', '/api/zebra/enviar', ({ body }) => new Promise((resolve, reject) => {
+  const ip = texto(body.ip, 40), porta = Number(body.porta) || 9100, zpl = String(body.zpl || '');
+  if (!ipLocal(ip)) return reject(new Erro(400, 'Informe o IP da impressora na rede local (ex.: 192.168.0.80)'));
+  if (!Number.isInteger(porta) || porta < 1 || porta > 65535) return reject(new Erro(400, 'Porta inválida'));
+  if (!zpl.startsWith('^XA') || zpl.length > 8e6) return reject(new Erro(400, 'Etiqueta inválida'));
+  const s = net.connect({ host: ip, port: porta });
+  let fim = false;
+  const acabar = (err) => { if (fim) return; fim = true; s.destroy(); err ? reject(err) : resolve({ ok: true, bytes: Buffer.byteLength(zpl) }); };
+  s.setTimeout(8000, () => acabar(new Erro(504, `A impressora ${ip} não respondeu. Confira se ela está ligada e na mesma rede do servidor.`)));
+  s.on('error', (e) => acabar(new Erro(502, `Não consegui falar com a impressora ${ip}:${porta} (${e.code || e.message}).`)));
+  s.on('connect', () => s.end(zpl, 'utf8', () => setTimeout(() => acabar(), 200)));
+}));
+
 rota('GET', '/api/credenciais/log', () =>
   db.prepare('SELECT * FROM log_senhas ORDER BY id DESC LIMIT 500').all(), { admin: true });
 
