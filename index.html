@@ -1880,6 +1880,14 @@ const camposDoModelo = (T) => [...new Set(T.elementos.filter((el) => el.origem =
 // ---- modelos padrão (a logo RM já vem em todos) ----
 const E = (tipo, o) => ({ tipo, x: 2, y: 2, w: 30, h: 8, fonte: 3, origem: 'fixo', valor: '', prefixo: '', linhas: 1, alinhar: 'L', rot: 'N', inverter: false, modulo: 2, legivel: true, tamanho: 4, espessura: 0.3, raio: 0, orient: 'H', ...o });
 const MODELOS_PADRAO = [
+  { id: 'pad-80x20', nome: 'Etiqueta 80 × 20 mm', largura: 80, altura: 20, gap: 3, sensor: 'W', girar: false, dpi: 203, midia: 'D', escuridao: 0, velocidade: 4, ajusteX: 0, ajusteY: 0, invertida: false, elementos: [
+    E('logo', { x: 1.5, y: 1.5, w: 17, h: 17 }),
+    E('texto', { x: 20.5, y: 1.5, w: 44, fonte: 3, origem: 'campo', valor: 'nome' }),
+    E('texto', { x: 20.5, y: 5, w: 44, fonte: 2.4, origem: 'campo', valor: 'marcaModelo' }),
+    E('codigo', { x: 20.5, y: 8.3, h: 7, modulo: 1, origem: 'campo', valor: 'numeroSerie' }),
+    E('qr', { x: 67, y: 2, tamanho: 3, origem: 'campo', valor: 'codigo' }),
+    E('texto', { x: 64, y: 13.5, w: 15, fonte: 2.2, alinhar: 'C', origem: 'campo', valor: 'codigo' }),
+  ] },
   { id: 'pad-patrimonio', nome: 'Patrimônio 50 × 25 mm', largura: 50, altura: 25, dpi: 203, midia: 'D', escuridao: 0, velocidade: 4, ajusteX: 0, ajusteY: 0, invertida: false, elementos: [
     E('logo', { x: 2, y: 2, w: 9, h: 9 }),
     E('texto', { x: 13, y: 2.2, w: 35, fonte: 3, valor: 'RM Informática' }),
@@ -2096,32 +2104,52 @@ function desenharEtiqueta(canvas, T, ctx, opc = {}) {
 
 // ---- ZPL ----
 const zplTexto = (s) => String(s).replace(/_/g, '_5F').replace(/\^/g, '_5E').replace(/~/g, '_7E');
+// gira o bitmap da logo 90° no sentido horário (para etiqueta que sai deitada)
+function girarBits(b) {
+  const w = b.h, h = b.w, bits = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) bits[y * w + x] = b.bits[(b.h - 1 - x) * b.w + y];
+  return { w, h, bits };
+}
+const PROX_ROT = { N: 'R', R: 'I', I: 'B', B: 'N' };
+const SENSORES = { W: 'W', M: 'M', N: 'N' };
 function gerarZPL(T, ctxs, copias = 1) {
-  const dpi = T.dpi, partes = [];
+  const dpi = T.dpi, partes = [], deitada = !!T.girar;
+  // Etiqueta deitada: monta-se na tela com a largura × altura do modelo, e a impressora recebe tudo girado 90°.
+  const larguraImp = deitada ? T.altura : T.largura, comprimento = deitada ? T.largura : T.altura;
+  const Hd = dots(T.altura, dpi);
   for (const ctx of ctxs) {
-    const z = ['^XA', '^CI28', `^PW${dots(T.largura, dpi)}`, `^LL${dots(T.altura, dpi)}`, `^LH${dots(T.ajusteX, dpi)},${dots(T.ajusteY, dpi)}`,
+    const z = ['^XA', '^CI28', `^MN${SENSORES[T.sensor] || 'W'}`, `^PW${dots(larguraImp, dpi)}`, `^LL${dots(comprimento, dpi)}`, `^LH${dots(T.ajusteX, dpi)},${dots(T.ajusteY, dpi)}`,
       `^MD${Math.max(-30, Math.min(30, Number(T.escuridao) || 0))}`, `^PR${Math.max(1, Math.min(14, Number(T.velocidade) || 4))}`, `^MT${T.midia === 'T' ? 'T' : 'D'}`, `^PO${T.invertida ? 'I' : 'N'}`];
     for (const el of T.elementos) {
-      const x = dots(el.x, dpi), y = dots(el.y, dpi), rot = ['N', 'R', 'I', 'B'].includes(el.rot) ? el.rot : 'N';
+      const v = ['texto', 'codigo', 'qr'].includes(el.tipo) ? valorEtq(el, ctx) : '';
+      if (['texto', 'codigo', 'qr'].includes(el.tipo) && !v) continue;
+      let x = dots(el.x, dpi), y = dots(el.y, dpi), rot = ['N', 'R', 'I', 'B'].includes(el.rot) ? el.rot : 'N';
+      if (deitada) {
+        // posição girada: o canto do elemento vai para (altura − y − alturaDoElemento, x)
+        const m = medidas(el, T, v), bh = girada(rot) ? m.w : m.h;
+        [x, y] = [Math.max(0, Hd - y - bh), x];
+        rot = PROX_ROT[rot];
+      }
       if (el.tipo === 'texto') {
-        const v = valorEtq(el, ctx); if (!v) continue;
         const fh = Math.max(10, dots(el.fonte, dpi)), lin = Math.max(1, Number(el.linhas) || 1), w = dots(el.w, dpi);
         if (el.inverter) { const bw = girada(rot) ? fh * lin : w, bh = girada(rot) ? w : fh * lin; z.push(`^FO${x},${y}^GB${bw},${bh},${Math.min(bw, bh)}^FS`); }
         z.push(`^FO${x},${y}^A0${rot},${fh},${fh}^FB${w},${lin},0,${['L', 'C', 'R'].includes(el.alinhar) ? el.alinhar : 'L'},0${el.inverter ? '^FR' : ''}^FH_^FD${zplTexto(v)}^FS`);
       } else if (el.tipo === 'codigo') {
-        const v = valorEtq(el, ctx); if (!v) continue;
         z.push(`^FO${x},${y}^BY${Math.max(1, Math.min(10, Number(el.modulo) || 2))},3^BC${rot},${Math.max(10, dots(el.h, dpi))},${el.legivel ? 'Y' : 'N'},N,N^FH_^FD${zplTexto(v)}^FS`);
       } else if (el.tipo === 'qr') {
-        const v = valorEtq(el, ctx); if (!v) continue;
         z.push(`^FO${x},${y}^BQN,2,${Math.max(1, Math.min(10, Number(el.tamanho) || 4))}^FH_^FDMA,${zplTexto(v)}^FS`);
       } else if (el.tipo === 'logo') {
-        z.push(`^FO${x},${y}${bitsGFA(logoBits(el, dpi))}^FS`);
+        const b = logoBits(el, dpi);
+        z.push(`^FO${x},${y}${bitsGFA(deitada ? girarBits(b) : b)}^FS`);
       } else if (el.tipo === 'linha') {
         const t = Math.max(1, dots(el.espessura, dpi)), c = Math.max(t, dots(el.w, dpi));
-        z.push(el.orient === 'V' ? `^FO${x},${y}^GB${t},${c},${t}^FS` : `^FO${x},${y}^GB${c},${t},${t}^FS`);
+        const vertical = (el.orient === 'V') !== deitada;
+        z.push(vertical ? `^FO${x},${y}^GB${t},${c},${t}^FS` : `^FO${x},${y}^GB${c},${t},${t}^FS`);
       } else if (el.tipo === 'caixa') {
         const t = Math.max(1, dots(el.espessura, dpi));
-        z.push(`^FO${x},${y}^GB${Math.max(t, dots(el.w, dpi))},${Math.max(t, dots(el.h, dpi))},${t},B,${Math.max(0, Math.min(8, Number(el.raio) || 0))}^FS`);
+        let w = Math.max(t, dots(el.w, dpi)), h = Math.max(t, dots(el.h, dpi));
+        if (deitada) [w, h] = [h, w];
+        z.push(`^FO${x},${y}^GB${w},${h},${t},B,${Math.max(0, Math.min(8, Number(el.raio) || 0))}^FS`);
       }
     }
     z.push(`^PQ${Math.max(1, Number(copias) || 1)},0,1,Y`, '^XZ');
@@ -2177,12 +2205,12 @@ function equipsEtq(todos) {
 function telaEtiquetas() {
   const aba = telaEtiquetas.aba || 'imprimir';
   const modelos = listaModelos();
-  if (!modeloPorId(ETQ.modelo)) ETQ.modelo = (modelos.find((m) => m.id === 'pad-patrimonio') || modelos[0]).id;
+  if (!modeloPorId(ETQ.modelo)) ETQ.modelo = (modelos.find((m) => m.id === 'pad-80x20') || modelos[0]).id;
   casca(topo('Etiquetas Zebra', `<button class="btn" id="b-novo-mod">+ Novo modelo</button>`, 'Etiquetas de patrimônio, inventário e localização para impressoras Zebra') + `
   <div class="abas"><button data-aba="imprimir" class="${aba === 'imprimir' ? 'ativo' : ''}">Imprimir</button><button data-aba="modelos" class="${aba === 'modelos' ? 'ativo' : ''}">Modelos salvos (${modelos.length})</button></div>
   <div id="etq-area"></div>`);
   $$('[data-aba]').forEach((b) => (b.onclick = () => { telaEtiquetas.aba = b.dataset.aba; telaEtiquetas(); }));
-  $('#b-novo-mod').onclick = () => { telaModelo.novo = { id: '', nome: 'Novo modelo', largura: 60, altura: 40, dpi: 203, midia: 'D', escuridao: 0, velocidade: 4, ajusteX: 0, ajusteY: 0, invertida: false, elementos: [E('logo', { x: 3, y: 3, w: 12, h: 12 }), E('texto', { x: 18, y: 4, w: 39, fonte: 3.5, valor: 'RM Informática' })] }; telaModelo.T = null; telaModelo.id = null; location.hash = 'modelo-novo'; };
+  $('#b-novo-mod').onclick = () => { telaModelo.novo = { id: '', nome: 'Novo modelo 80 × 20 mm', largura: 80, altura: 20, gap: 3, sensor: 'W', girar: false, dpi: 203, midia: 'D', escuridao: 0, velocidade: 4, ajusteX: 0, ajusteY: 0, invertida: false, elementos: [E('logo', { x: 1.5, y: 1.5, w: 17, h: 17 }), E('texto', { x: 20.5, y: 2, w: 57, fonte: 3.5, valor: 'RM Informática' })] }; telaModelo.T = null; telaModelo.id = null; location.hash = 'modelo-novo'; };
   if (aba === 'modelos') return abaModelos();
   abaImprimir();
 }
@@ -2240,8 +2268,8 @@ function abaImprimir() {
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0">Pré-visualização</h2><span class="suave peq" id="etq-contagem"></span></div>
       <div class="etq-tela"><canvas id="etq-canvas"></canvas></div>
       <div style="display:flex;justify-content:center;align-items:center;gap:8px"><button class="btn peq" id="etq-ant" aria-label="Etiqueta anterior">‹</button><span class="peq" id="etq-pos"></span><button class="btn peq" id="etq-prox" aria-label="Próxima etiqueta">›</button></div>
-      <p class="suave peq" style="text-align:center;margin:6px 0 12px">${esc(T.largura)} × ${esc(T.altura)} mm · ${esc(T.dpi)} dpi. A pré-visualização é aproximada: a fonte e o código de barras saem da própria Zebra.</p>
-      <div class="acoes" style="justify-content:center"><button class="btn" id="etq-ver-zpl">Ver código ZPL</button><button class="btn pri" id="etq-imprimir">Imprimir</button></div>
+      <p class="suave peq" style="text-align:center;margin:6px 0 12px">${esc(T.largura)} × ${esc(T.altura)} mm${T.gap ? ` · gap ${esc(String(T.gap).replace('.', ','))} mm` : ''} · ${esc(T.dpi)} dpi${T.girar ? ' · sai deitada' : ''}. A pré-visualização é aproximada: a fonte e o código de barras saem da própria Zebra.</p>
+      <div class="acoes" style="justify-content:center"><button class="btn" id="etq-calibrar" title="A Zebra mede o tamanho da etiqueta e o gap do rolo">Calibrar</button><button class="btn" id="etq-ver-zpl">Ver código ZPL</button><button class="btn pri" id="etq-imprimir">Imprimir</button></div>
     </div>
   </div>
   ${ETQ.modo === 'equip' ? `<div class="filtros">
@@ -2351,6 +2379,26 @@ function abaImprimir() {
     } catch (e) { toast(e.message, 1); }
     finally { btn.disabled = false; }
   };
+  // Calibrar: a Zebra avança algumas etiquetas, mede o tamanho e o gap do rolo e guarda a configuração.
+  $('#etq-calibrar').onclick = async (ev) => {
+    const btn = ev.currentTarget;
+    const dpi = T.dpi, larg = T.girar ? T.altura : T.largura, comp = T.girar ? T.largura : T.altura;
+    const zpl = `^XA^MN${SENSORES[T.sensor] || 'W'}^MT${T.midia === 'T' ? 'T' : 'D'}^PW${dots(larg, dpi)}^LL${dots(comp, dpi)}^XZ\n~JC\n^XA^JUS^XZ`;
+    if (!ONLINE) return toast('Na demonstração a impressora fica desligada. No sistema instalado, a Zebra avança algumas etiquetas para medir o tamanho e o gap do rolo.');
+    const m = $('#etq-metodo').value;
+    if (m === 'arquivo') return toast('Para calibrar, escolha "Zebra na rede" ou "Zebra no USB".', 1);
+    if (!(await confirmar(`Calibrar a Zebra para etiquetas de ${String(larg).replace('.', ',')} × ${String(comp).replace('.', ',')} mm${T.gap ? ` com gap de ${String(T.gap).replace('.', ',')} mm` : ''}?\n\nA impressora vai avançar algumas etiquetas em branco.`))) return;
+    btn.disabled = true;
+    try {
+      if (m === 'rede') {
+        const ip = $('#etq-ip').value.trim();
+        if (!ip) throw new Error('Informe o IP da Zebra');
+        await api('POST', '/api/zebra/enviar', { ip, porta: Number($('#etq-porta').value) || 9100, zpl });
+      } else await zebraBrowserPrint(zpl);
+      toast('Calibração enviada. Aguarde a Zebra parar de avançar as etiquetas.');
+    } catch (e) { toast(e.message, 1); }
+    finally { btn.disabled = false; }
+  };
 }
 
 // ----- tela: editor de modelo -----
@@ -2378,6 +2426,9 @@ function telaModelo(id) {
         <div class="campo"><label>Velocidade (pol./s)</label><input type="number" min="1" max="14" data-tp="velocidade" data-num value="${esc(T.velocidade ?? 4)}"></div>
         <div class="campo"><label>Ajuste horizontal (mm)</label><input type="number" step="0.5" data-tp="ajusteX" data-num value="${esc(T.ajusteX ?? 0)}"></div>
         <div class="campo"><label>Ajuste vertical (mm)</label><input type="number" step="0.5" data-tp="ajusteY" data-num value="${esc(T.ajusteY ?? 0)}"></div>
+        <div class="campo"><label>Espaço entre etiquetas / gap (mm)</label><input type="number" step="0.1" min="0" data-tp="gap" data-num value="${esc(T.gap ?? 3)}"></div>
+        <div class="campo"><label>Sensor do rolo</label><select data-tp="sensor"><option value="W">Gap (espaço entre etiquetas)</option><option value="M"${T.sensor === 'M' ? ' selected' : ''}>Marca preta no verso</option><option value="N"${T.sensor === 'N' ? ' selected' : ''}>Papel contínuo</option></select></div>
+        <div class="campo l4"><label class="chk-linha"><input type="checkbox" data-tp="girar"${T.girar ? ' checked' : ''}> Etiqueta sai deitada (girar 90°): marque se a largura da etiqueta corre no sentido em que o papel sai da Zebra</label></div>
         <div class="campo l4"><label class="chk-linha"><input type="checkbox" data-tp="invertida"${T.invertida ? ' checked' : ''}> Imprimir de cabeça para baixo (180°)</label></div>
       </div></div>
       <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><h3 style="margin:0">Elementos (${T.elementos.length})</h3>
